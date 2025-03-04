@@ -1,4 +1,4 @@
-package com.tenacy.pixiescale.domain.dto;
+package com.tenacy.pixiescale.api.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
