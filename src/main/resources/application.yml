@@ -25,3 +25,16 @@ logging:
   level:
     root: INFO
     com.pixiescale: DEBUG
+
+ffmpeg:
+  binary-path: ffmpeg
+  temp-dir: ${java.io.tmpdir}/pixiescale
+  timeout-seconds: 3600
+  gpu-acceleration: false
+  gpu-device: "0"
+
+storage:
+  type: local
+  base-dir: ${user.home}/pixiescale/media
+  upload-part-size: 5
+  max-upload-size: 2000
