@@ -1,7 +1,7 @@
-package com.tenacy.pixiescale.service;
+package com.tenacy.pixiescale.mediatranscoding.service;
 
-import com.tenacy.pixiescale.api.dto.TranscodingJobRequest;
-import com.tenacy.pixiescale.domain.TranscodingJob;
+import com.tenacy.pixiescale.mediatranscoding.api.dto.TranscodingJobRequest;
+import com.tenacy.pixiescale.mediatranscoding.domain.TranscodingJob;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

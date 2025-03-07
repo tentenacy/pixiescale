@@ -1,6 +1,6 @@
-package com.tenacy.pixiescale.service;
+package com.tenacy.pixiescale.mediatranscoding.service;
 
-import com.tenacy.pixiescale.domain.TranscodingTask;
+import com.tenacy.pixiescale.mediatranscoding.domain.TranscodingTask;
 import reactor.core.publisher.Mono;
 
 public interface TranscodingWorker {

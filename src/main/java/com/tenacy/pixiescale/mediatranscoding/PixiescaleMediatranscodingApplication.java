@@ -1,4 +1,4 @@
-package com.tenacy.pixiescale;
+package com.tenacy.pixiescale.mediatranscoding;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -6,10 +6,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 
 @SpringBootApplication
 @EnableConfigurationProperties
-public class PixiescaleApplication {
+public class PixiescaleMediatranscodingApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(PixiescaleApplication.class, args);
+		SpringApplication.run(PixiescaleMediatranscodingApplication.class, args);
 	}
 
 }

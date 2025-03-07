@@ -1,4 +1,4 @@
-package com.tenacy.pixiescale.config;
+package com.tenacy.pixiescale.mediatranscoding.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

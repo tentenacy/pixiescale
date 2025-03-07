@@ -1,4 +1,4 @@
-package com.tenacy.pixiescale.api.dto;
+package com.tenacy.pixiescale.mediatranscoding.api.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

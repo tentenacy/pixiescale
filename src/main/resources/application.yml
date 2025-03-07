@@ -1,6 +1,6 @@
 spring:
   application:
-    name: pixiescale
+    name: pixiescale-mediatranscoding
 
   profiles:
     active: local

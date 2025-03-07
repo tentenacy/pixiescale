@@ -1,6 +1,6 @@
-package com.tenacy.pixiescale.service;
+package com.tenacy.pixiescale.mediatranscoding.service;
 
-import com.tenacy.pixiescale.domain.MediaFile;
+import com.tenacy.pixiescale.mediatranscoding.domain.MediaFile;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 import reactor.core.publisher.Mono;

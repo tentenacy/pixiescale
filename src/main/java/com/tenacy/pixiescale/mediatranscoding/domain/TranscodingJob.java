@@ -1,4 +1,4 @@
-package com.tenacy.pixiescale.domain;
+package com.tenacy.pixiescale.mediatranscoding.domain;
 
 import lombok.Builder;
 import lombok.Data;
