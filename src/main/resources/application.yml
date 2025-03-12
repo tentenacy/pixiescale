@@ -5,6 +5,14 @@ spring:
   profiles:
     active: local
 
+  servlet:
+    multipart:
+      max-file-size: 2000MB
+      max-request-size: 2000MB
+    webflux:
+      multipart:
+        max-in-memory-size: 20MB
+
 server:
   port: 8080
 
