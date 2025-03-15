@@ -37,13 +37,13 @@ public class FFmpegMetadataExtractor implements MetadataExtractor {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     output.add(line);
-                    log.debug("FFmpeg output: {}", line);
+                    log.debug("FFmpeg 출력: {}", line);
                 }
             }
 
             int exitCode = process.waitFor();
             if (exitCode != 0 && exitCode != 1) { // FFmpeg returns 1 when querying information
-                throw new RuntimeException("FFmpeg process failed with exit code: " + exitCode);
+                throw new RuntimeException("FFmpeg 처리 실패. 종료 코드: " + exitCode);
             }
 
             return parseMetadata(output);

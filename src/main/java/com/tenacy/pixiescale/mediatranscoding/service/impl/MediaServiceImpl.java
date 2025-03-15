@@ -1,5 +1,6 @@
 package com.tenacy.pixiescale.mediatranscoding.service.impl;
 
+import com.tenacy.pixiescale.mediatranscoding.config.StorageConfig;
 import com.tenacy.pixiescale.mediatranscoding.domain.MediaFile;
 import com.tenacy.pixiescale.mediatranscoding.service.MediaService;
 import com.tenacy.pixiescale.mediatranscoding.service.MetadataExtractor;
@@ -22,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class MediaServiceImpl implements MediaService {
 
+    private final StorageConfig storageConfig;
     private final StorageService storageService;
     private final MetadataExtractor metadataExtractor;
     private final ConcurrentHashMap<String, MediaFile> mediaFileStore = new ConcurrentHashMap<>();
@@ -34,8 +36,9 @@ public class MediaServiceImpl implements MediaService {
 
         return storageService.store(file, filename)
                 .flatMap(storedFilename -> {
-                    Path filePath = Paths.get(storedFilename);
-                    return metadataExtractor.extractMetadata(filePath)
+                    Path baseDir = Paths.get(storageConfig.getBaseDir());
+                    Path fullPath = baseDir.resolve(storedFilename);
+                    return metadataExtractor.extractMetadata(fullPath)
                             .map(metadata -> {
                                 MediaFile mediaFile = MediaFile.builder()
                                         .id(fileId)
