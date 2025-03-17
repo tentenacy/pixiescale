@@ -1,0 +1,42 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: pixiescale-mediaingestion
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  servlet:
+    multipart:
+      max-file-size: 2000MB
+      max-request-size: 2000MB
+    webflux:
+      multipart:
+        max-in-memory-size: 20MB
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.tenacy.pixiescale: DEBUG
+
+storage:
+  type: local
+  base-dir: ${user.home}/pixiescale/media/uploads
+  upload-part-size: 5
+  max-upload-size: 2000
