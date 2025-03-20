@@ -1,0 +1,49 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: pixiescale-transcodingworker
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: transcodingworker-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.tenacy.pixiescale.transcodingworker.*
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.tenacy.pixiescale: DEBUG
+
+ffmpeg:
+  binary-path: ffmpeg
+  temp-dir: ${java.io.tmpdir}/pixiescale
+  timeout-seconds: 3600
+  gpu-acceleration: false
+  gpu-device: "0"
+
+app:
+  kafka:
+    topics:
+      transcoding-task: transcoding-task
+      task-result: task-result
