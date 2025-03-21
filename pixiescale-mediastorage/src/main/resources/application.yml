@@ -1,0 +1,48 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: pixiescale-mediastorage
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: mediastorage-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.tenacy.pixiescale.mediastorage.*
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    com.tenacy.pixiescale: DEBUG
+
+storage:
+  type: local
+  base-dir: ${user.home}/pixiescale/media/transcoded
+  upload-part-size: 5
+  max-upload-size: 2000
+
+app:
+  kafka:
+    topics:
+      task-result: task-result
+      storage-result: storage-result
