@@ -1,0 +1,54 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: pixiescale-monitoring
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: monitoring-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.tenacy.pixiescale.monitoring.*
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.9, 0.95, 0.99
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    com.tenacy.pixiescale: DEBUG
+
+app:
+  kafka:
+    topics:
+      media-uploaded: media-uploaded
+      job-created: job-created
+      job-updated: job-updated
+      transcoding-task: transcoding-task
+      task-result: task-result
+      storage-result: storage-result
