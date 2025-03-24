@@ -24,10 +24,6 @@ spring:
           predicates:
             - Path=/api/v1/storage/**
       default-filters:
-        - name: RequestRateLimiter
-          args:
-            redis-rate-limiter.replenishRate: 10
-            redis-rate-limiter.burstCapacity: 20
         - name: Retry
           args:
             retries: 3

@@ -1,0 +1,13 @@
+package com.tenacy.pixiescale.mediaingestion.service;
+
+import com.tenacy.pixiescale.mediaingestion.domain.MediaFile;
+import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
+import reactor.core.publisher.Mono;
+
+public interface MediaService {
+    Mono<MediaFile> storeMedia(MultipartFile file);
+    Mono<Resource> getMediaResource(String mediaId);
+    Mono<MediaFile> getMediaInfo(String mediaId);
+    Mono<Void> deleteMedia(String mediaId);
+}

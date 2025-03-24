@@ -12,10 +12,13 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: com.tenacy.pixiescale.transcodingworker.*
+        spring.json.trusted.packages: com.tenacy.pixiescale.transcodingworker.*,java.util,java.time
+        spring.json.value.default.type: com.tenacy.pixiescale.transcodingworker.event.TranscodingTaskEvent
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.add.type.headers: false
 
 management:
   endpoints:
@@ -42,7 +45,12 @@ ffmpeg:
   gpu-acceleration: false
   gpu-device: "0"
 
+storage:
+  base-dir: ${java.io.tmpdir}/pixiescale/output
+
 app:
+  media:
+    source-dir: ${user.home}/pixiescale/media/uploads
   kafka:
     topics:
       transcoding-task: transcoding-task

@@ -1,0 +1,8 @@
+package com.tenacy.pixiescale.mediaingestion.service;
+
+import com.tenacy.pixiescale.mediaingestion.event.MediaUploadedEvent;
+import reactor.core.publisher.Mono;
+
+public interface EventPublisher {
+    Mono<Void> publishMediaUploaded(MediaUploadedEvent event);
+}
