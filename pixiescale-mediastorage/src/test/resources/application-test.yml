@@ -1,0 +1,23 @@
+spring:
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers}
+    consumer:
+      group-id: mediastorage-test-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.tenacy.pixiescale.mediastorage.*,java.util,java.time
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+app:
+  kafka:
+    topics:
+      task-result: task-result-test
+      storage-result: storage-result-test
+
+storage:
+  type: local
+  base-dir: ${java.io.tmpdir}/pixiescale-test/media/transcoded
