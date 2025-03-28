@@ -1,6 +1,7 @@
 package com.tenacy.pixiescale.transcodingworker.api;
 
 import com.tenacy.pixiescale.transcodingworker.config.FFmpegConfig;
+import com.tenacy.pixiescale.transcodingworker.service.HealthCheckService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class WorkerController {
 
     private final FFmpegConfig ffmpegConfig;
+    private final HealthCheckService healthCheckService;
 
     @GetMapping("/status")
     public Mono<ResponseEntity<Map<String, Object>>> getWorkerStatus() {
@@ -66,22 +68,9 @@ public class WorkerController {
             health.put("status", "UP");
             health.put("time", System.currentTimeMillis());
 
-            try {
-                // FFmpeg 버전 확인 (간단한 명령어로 작동 여부 테스트)
-                ProcessBuilder processBuilder = new ProcessBuilder(ffmpegConfig.getBinaryPath(), "-version");
-                Process process = processBuilder.start();
-                int exitCode = process.waitFor();
-
-                if (exitCode == 0) {
-                    health.put("ffmpeg", "UP");
-                } else {
-                    health.put("ffmpeg", "DOWN");
-                    health.put("ffmpegExitCode", exitCode);
-                }
-            } catch (Exception e) {
-                health.put("ffmpeg", "DOWN");
-                health.put("ffmpegError", e.getMessage());
-            }
+            // FFmpeg 상태 확인을 서비스에 위임
+            Map<String, Object> ffmpegHealth = healthCheckService.checkFFmpegHealth(ffmpegConfig.getBinaryPath());
+            health.putAll(ffmpegHealth);
 
             return ResponseEntity.ok(health);
         });

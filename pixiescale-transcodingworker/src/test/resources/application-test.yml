@@ -1,0 +1,36 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: transcodingworker-test-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.tenacy.pixiescale.transcodingworker.*,java.util,java.time
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+ffmpeg:
+  binary-path: ffmpeg
+  temp-dir: ${java.io.tmpdir}/pixiescale-test/temp
+  timeout-seconds: 5
+  gpu-acceleration: false
+  gpu-device: "0"
+
+storage:
+  base-dir: ${java.io.tmpdir}/pixiescale-test/output
+
+app:
+  media:
+    source-dir: ${java.io.tmpdir}/pixiescale-test/media/uploads
+  kafka:
+    topics:
+      transcoding-task: transcoding-task-test
+      task-result: task-result-test
+
+logging:
+  level:
+    com.tenacy.pixiescale: DEBUG
+    org.springframework.web: INFO
