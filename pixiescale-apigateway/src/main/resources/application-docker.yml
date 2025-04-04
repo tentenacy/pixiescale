@@ -1,0 +1,20 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: mediaingestion
+          uri: http://mediaingestion:8081
+          predicates:
+            - Path=/api/v1/media/**
+        - id: jobmanagement
+          uri: http://jobmanagement:8082
+          predicates:
+            - Path=/api/v1/jobs/**
+        - id: transcodingworker
+          uri: http://transcodingworker:8083
+          predicates:
+            - Path=/api/v1/transcoding/**
+        - id: mediastorage
+          uri: http://mediastorage:8084
+          predicates:
+            - Path=/api/v1/storage/**

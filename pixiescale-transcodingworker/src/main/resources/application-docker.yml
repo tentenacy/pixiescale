@@ -1,0 +1,13 @@
+spring:
+  kafka:
+    bootstrap-servers: kafka:9092
+
+ffmpeg:
+  temp-dir: /app/temp
+
+storage:
+  base-dir: /app/output
+
+app:
+  media:
+    source-dir: /app/media/uploads
