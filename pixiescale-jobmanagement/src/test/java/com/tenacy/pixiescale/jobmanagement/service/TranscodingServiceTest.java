@@ -1,10 +1,10 @@
 package com.tenacy.pixiescale.jobmanagement.service;
 
 import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobRequest;
-import com.tenacy.pixiescale.jobmanagement.domain.MediaFile;
-import com.tenacy.pixiescale.jobmanagement.domain.MediaMetadata;
-import com.tenacy.pixiescale.jobmanagement.domain.TranscodingConfig;
-import com.tenacy.pixiescale.jobmanagement.domain.TranscodingJob;
+import com.tenacy.pixiescale.common.domain.MediaFile;
+import com.tenacy.pixiescale.common.domain.MediaMetadata;
+import com.tenacy.pixiescale.common.domain.TranscodingConfig;
+import com.tenacy.pixiescale.common.domain.TranscodingJob;
 import com.tenacy.pixiescale.jobmanagement.event.MediaEventListener;
 import com.tenacy.pixiescale.jobmanagement.service.impl.TranscodingServiceImpl;
 import org.junit.jupiter.api.BeforeEach;

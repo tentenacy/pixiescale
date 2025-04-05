@@ -1,4 +1,4 @@
-package com.tenacy.pixiescale.jobmanagement.event;
+package com.tenacy.pixiescale.common.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

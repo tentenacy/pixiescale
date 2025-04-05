@@ -1,10 +1,12 @@
-package com.tenacy.pixiescale.jobmanagement.event;
+package com.tenacy.pixiescale.common.event;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class StorageResultEvent {

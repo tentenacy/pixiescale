@@ -1,4 +1,4 @@
-package com.tenacy.pixiescale.jobmanagement.domain;
+package com.tenacy.pixiescale.common.domain;
 
 import lombok.Builder;
 import lombok.Data;

@@ -2,9 +2,9 @@ package com.tenacy.pixiescale.jobmanagement.api;
 
 import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobRequest;
 import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobResponse;
-import com.tenacy.pixiescale.jobmanagement.domain.TranscodingConfig;
-import com.tenacy.pixiescale.jobmanagement.domain.TranscodingJob;
-import com.tenacy.pixiescale.jobmanagement.domain.TranscodingTask;
+import com.tenacy.pixiescale.common.domain.TranscodingConfig;
+import com.tenacy.pixiescale.common.domain.TranscodingJob;
+import com.tenacy.pixiescale.common.domain.TranscodingTask;
 import com.tenacy.pixiescale.jobmanagement.service.TranscodingService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

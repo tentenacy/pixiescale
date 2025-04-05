@@ -1,7 +1,7 @@
 package com.tenacy.pixiescale.transcodingworker.service;
 
 import com.tenacy.pixiescale.transcodingworker.config.FFmpegConfig;
-import com.tenacy.pixiescale.transcodingworker.domain.TranscodingTask;
+import com.tenacy.pixiescale.common.domain.TranscodingTask;
 import com.tenacy.pixiescale.transcodingworker.service.impl.FFmpegTranscodingWorker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

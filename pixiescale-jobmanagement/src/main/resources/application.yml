@@ -9,16 +9,18 @@ spring:
     consumer:
       group-id: jobmanagement-group
       auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
-        spring.json.trusted.packages: com.tenacy.pixiescale.jobmanagement.*,java.util,java.time
-        spring.json.value.default.type: com.tenacy.pixiescale.jobmanagement.event.MediaUploadedEvent
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.tenacy.pixiescale.common.event.MediaUploadedEvent
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        spring.json.add.type.headers: false
+        spring.json.add.type.headers: true
   data:
     redis:
       host: localhost
@@ -42,12 +44,3 @@ logging:
   level:
     root: INFO
     com.tenacy.pixiescale: DEBUG
-
-app:
-  kafka:
-    topics:
-      media-uploaded: media-uploaded
-      job-created: job-created
-      job-updated: job-updated
-      transcoding-task: transcoding-task
-      task-result: task-result

@@ -1,10 +1,11 @@
 package com.tenacy.pixiescale.mediastorage.event;
 
+import com.tenacy.pixiescale.common.event.StorageResultEvent;
+import com.tenacy.pixiescale.common.event.TaskResultEvent;
 import com.tenacy.pixiescale.mediastorage.service.EventPublisher;
 import com.tenacy.pixiescale.mediastorage.service.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -20,7 +21,6 @@ public class TaskResultListener {
     private final StorageService storageService;
     private final EventPublisher eventPublisher;
 
-    // pixiescale-mediastorage/src/main/java/com/tenacy/pixiescale/mediastorage/event/TaskResultListener.java (계속)
     @KafkaListener(topics = "${app.kafka.topics.task-result}", groupId = "${spring.kafka.consumer.group-id}")
     public void handleTaskResult(TaskResultEvent event) {
         log.info("트랜스코딩 태스크 결과 이벤트 수신: {}", event.getTaskId());

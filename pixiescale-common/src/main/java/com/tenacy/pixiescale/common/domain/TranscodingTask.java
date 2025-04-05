@@ -1,4 +1,4 @@
-package com.tenacy.pixiescale.transcodingworker.domain;
+package com.tenacy.pixiescale.common.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -13,12 +13,11 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: com.tenacy.pixiescale.mediastorage.*,java.util,java.time
-        spring.json.value.default.type: com.tenacy.pixiescale.mediastorage.event.TaskResultEvent
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
-        spring.json.add.type.headers: false
+        spring.json.add.type.headers: true
 
 management:
   endpoints:
@@ -40,7 +39,7 @@ logging:
 
 storage:
   type: local
-  base-dir: ${user.home}/pixiescale/media/transcoded
+  base-dir: ${user.home}/pixiescale/output
   upload-part-size: 5
   max-upload-size: 2000
 

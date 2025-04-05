@@ -1,6 +1,6 @@
 package com.tenacy.pixiescale.mediastorage.service.impl;
 
-import com.tenacy.pixiescale.mediastorage.event.StorageResultEvent;
+import com.tenacy.pixiescale.common.event.StorageResultEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

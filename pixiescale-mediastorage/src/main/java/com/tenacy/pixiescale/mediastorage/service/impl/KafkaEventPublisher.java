@@ -1,6 +1,6 @@
 package com.tenacy.pixiescale.mediastorage.service.impl;
 
-import com.tenacy.pixiescale.mediastorage.event.StorageResultEvent;
+import com.tenacy.pixiescale.common.event.StorageResultEvent;
 import com.tenacy.pixiescale.mediastorage.service.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

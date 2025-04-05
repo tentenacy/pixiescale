@@ -5,3 +5,13 @@ spring:
     redis:
       host: redis
       port: 6379
+
+app:
+  kafka:
+    topics:
+      media-uploaded: media-uploaded
+      job-created: job-created
+      job-updated: job-updated
+      transcoding-task: transcoding-task
+      task-result: task-result
+      storage-result: storage-result

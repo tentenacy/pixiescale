@@ -1,6 +1,6 @@
 package com.tenacy.pixiescale.jobmanagement.api.dto;
 
-import com.tenacy.pixiescale.jobmanagement.domain.TranscodingJob;
+import com.tenacy.pixiescale.common.domain.TranscodingJob;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

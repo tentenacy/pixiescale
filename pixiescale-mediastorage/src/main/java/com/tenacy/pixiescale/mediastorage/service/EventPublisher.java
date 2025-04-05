@@ -1,6 +1,6 @@
 package com.tenacy.pixiescale.mediastorage.service;
 
-import com.tenacy.pixiescale.mediastorage.event.StorageResultEvent;
+import com.tenacy.pixiescale.common.event.StorageResultEvent;
 import reactor.core.publisher.Mono;
 
 public interface EventPublisher {

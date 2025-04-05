@@ -1,8 +1,8 @@
 package com.tenacy.pixiescale.mediaingestion.service.impl;
 
 import com.tenacy.pixiescale.mediaingestion.config.StorageConfig;
-import com.tenacy.pixiescale.mediaingestion.domain.MediaFile;
-import com.tenacy.pixiescale.mediaingestion.event.MediaUploadedEvent;
+import com.tenacy.pixiescale.common.domain.MediaFile;
+import com.tenacy.pixiescale.common.event.MediaUploadedEvent;
 import com.tenacy.pixiescale.mediaingestion.service.EventPublisher;
 import com.tenacy.pixiescale.mediaingestion.service.MediaService;
 import com.tenacy.pixiescale.mediaingestion.service.MetadataExtractor;

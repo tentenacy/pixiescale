@@ -1,6 +1,5 @@
-package com.tenacy.pixiescale.mediastorage.integration;
+package com.tenacy.pixiescale.mediastorage.config;
 
-import com.tenacy.pixiescale.mediastorage.event.TaskResultEvent;
 import com.tenacy.pixiescale.mediastorage.service.EventPublisher;
 import com.tenacy.pixiescale.mediastorage.service.StorageService;
 import org.springframework.boot.test.context.TestConfiguration;

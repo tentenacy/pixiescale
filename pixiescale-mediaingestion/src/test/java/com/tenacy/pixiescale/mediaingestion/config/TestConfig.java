@@ -1,6 +1,6 @@
 package com.tenacy.pixiescale.mediaingestion.config;
 
-import com.tenacy.pixiescale.mediaingestion.domain.MediaMetadata;
+import com.tenacy.pixiescale.common.domain.MediaMetadata;
 import com.tenacy.pixiescale.mediaingestion.service.EventPublisher;
 import com.tenacy.pixiescale.mediaingestion.service.MetadataExtractor;
 import org.springframework.boot.test.context.TestConfiguration;

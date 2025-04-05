@@ -1,7 +1,7 @@
 package com.tenacy.pixiescale.mediaingestion.api;
 
 import com.tenacy.pixiescale.mediaingestion.api.dto.MediaUploadResponse;
-import com.tenacy.pixiescale.mediaingestion.domain.MediaFile;
+import com.tenacy.pixiescale.common.domain.MediaFile;
 import com.tenacy.pixiescale.mediaingestion.service.MediaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

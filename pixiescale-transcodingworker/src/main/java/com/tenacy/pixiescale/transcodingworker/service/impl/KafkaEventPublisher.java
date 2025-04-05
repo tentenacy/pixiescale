@@ -1,6 +1,6 @@
 package com.tenacy.pixiescale.transcodingworker.service.impl;
 
-import com.tenacy.pixiescale.transcodingworker.event.TaskResultEvent;
+import com.tenacy.pixiescale.common.event.TaskResultEvent;
 import com.tenacy.pixiescale.transcodingworker.service.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

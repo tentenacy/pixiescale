@@ -2,8 +2,8 @@ package com.tenacy.pixiescale.jobmanagement.api;
 
 import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobRequest;
 import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobResponse;
-import com.tenacy.pixiescale.jobmanagement.domain.TranscodingJob;
-import com.tenacy.pixiescale.jobmanagement.domain.TranscodingTask;
+import com.tenacy.pixiescale.common.domain.TranscodingJob;
+import com.tenacy.pixiescale.common.domain.TranscodingTask;
 import com.tenacy.pixiescale.jobmanagement.service.TranscodingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,13 +14,13 @@ import reactor.core.publisher.Mono;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/transcoding")
+@RequestMapping("/api/v1/jobs")
 @RequiredArgsConstructor
 public class TranscodingController {
 
     private final TranscodingService transcodingService;
 
-    @PostMapping("/jobs")
+    @PostMapping
     public Mono<ResponseEntity<TranscodingJobResponse>> createJob(@RequestBody TranscodingJobRequest request) {
         return transcodingService.createJob(request)
                 .map(this::toResponse)
@@ -28,20 +28,20 @@ public class TranscodingController {
                 .doOnSuccess(response -> log.info("트랜스코딩 작업 생성: mediaFileId={}", request.getMediaFileId()));
     }
 
-    @GetMapping("/jobs/{jobId}")
+    @GetMapping("/{jobId}")
     public Mono<ResponseEntity<TranscodingJobResponse>> getJob(@PathVariable String jobId) {
         return transcodingService.getJob(jobId)
                 .map(this::toResponse)
                 .map(ResponseEntity::ok);
     }
 
-    @GetMapping("/jobs/media/{mediaId}")
+    @GetMapping("/media/{mediaId}")
     public Flux<TranscodingJobResponse> getJobsByMediaId(@PathVariable String mediaId) {
         return transcodingService.getJobsByMediaId(mediaId)
                 .map(this::toResponse);
     }
 
-    @DeleteMapping("/jobs/{jobId}")
+    @DeleteMapping("/{jobId}")
     public Mono<ResponseEntity<Void>> cancelJob(@PathVariable String jobId) {
         return transcodingService.cancelJob(jobId)
                 .then(Mono.just(ResponseEntity.noContent().<Void>build()))

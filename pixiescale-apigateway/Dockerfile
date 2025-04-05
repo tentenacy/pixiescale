@@ -1,6 +1,8 @@
 # Build stage
+FROM pixiescale-common:latest AS maven-repo
 FROM gradle:8.14.3-jdk17 AS build
 WORKDIR /app
+COPY --from=maven-repo /root/.m2/repository /root/.m2/repository
 COPY . /app/
 RUN gradle build -x test
 

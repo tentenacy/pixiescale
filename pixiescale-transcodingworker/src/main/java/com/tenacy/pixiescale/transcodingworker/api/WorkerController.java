@@ -18,14 +18,14 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1/transcoding/worker")
+@RequestMapping("/api/v1/transcoding")
 @RequiredArgsConstructor
 public class WorkerController {
 
     private final FFmpegConfig ffmpegConfig;
     private final HealthCheckService healthCheckService;
 
-    @GetMapping("/status")
+    @GetMapping("/worker/status")
     public Mono<ResponseEntity<Map<String, Object>>> getWorkerStatus() {
         return Mono.fromCallable(() -> {
             Map<String, Object> status = new HashMap<>();
@@ -61,7 +61,7 @@ public class WorkerController {
         });
     }
 
-    @GetMapping("/health")
+    @GetMapping("/worker/health")
     public Mono<ResponseEntity<Map<String, Object>>> getHealth() {
         return Mono.fromCallable(() -> {
             Map<String, Object> health = new HashMap<>();

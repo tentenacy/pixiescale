@@ -1,7 +1,7 @@
 package com.tenacy.pixiescale.jobmanagement.service;
 
-import com.tenacy.pixiescale.jobmanagement.event.TranscodingJobEvent;
-import com.tenacy.pixiescale.jobmanagement.event.TranscodingTaskEvent;
+import com.tenacy.pixiescale.common.event.TranscodingJobEvent;
+import com.tenacy.pixiescale.common.event.TranscodingTaskEvent;
 import reactor.core.publisher.Mono;
 
 public interface EventPublisher {

@@ -1,7 +1,7 @@
 package com.tenacy.pixiescale.jobmanagement.service.impl;
 
-import com.tenacy.pixiescale.jobmanagement.event.TranscodingJobEvent;
-import com.tenacy.pixiescale.jobmanagement.event.TranscodingTaskEvent;
+import com.tenacy.pixiescale.common.event.TranscodingJobEvent;
+import com.tenacy.pixiescale.common.event.TranscodingTaskEvent;
 import com.tenacy.pixiescale.jobmanagement.service.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

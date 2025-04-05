@@ -1,7 +1,8 @@
 package com.tenacy.pixiescale.jobmanagement.event;
 
-import com.tenacy.pixiescale.jobmanagement.domain.MediaFile;
-import com.tenacy.pixiescale.jobmanagement.domain.MediaMetadata;
+import com.tenacy.pixiescale.common.domain.MediaFile;
+import com.tenacy.pixiescale.common.domain.MediaMetadata;
+import com.tenacy.pixiescale.common.event.MediaUploadedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;

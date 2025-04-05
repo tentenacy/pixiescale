@@ -1,9 +1,9 @@
 package com.tenacy.pixiescale.mediaingestion.service;
 
 import com.tenacy.pixiescale.mediaingestion.config.StorageConfig;
-import com.tenacy.pixiescale.mediaingestion.domain.MediaFile;
-import com.tenacy.pixiescale.mediaingestion.domain.MediaMetadata;
-import com.tenacy.pixiescale.mediaingestion.event.MediaUploadedEvent;
+import com.tenacy.pixiescale.common.domain.MediaFile;
+import com.tenacy.pixiescale.common.domain.MediaMetadata;
+import com.tenacy.pixiescale.common.event.MediaUploadedEvent;
 import com.tenacy.pixiescale.mediaingestion.service.impl.MediaServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

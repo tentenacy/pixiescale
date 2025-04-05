@@ -1,6 +1,6 @@
 package com.tenacy.pixiescale.mediaingestion.service.impl;
 
-import com.tenacy.pixiescale.mediaingestion.event.MediaUploadedEvent;
+import com.tenacy.pixiescale.common.event.MediaUploadedEvent;
 import com.tenacy.pixiescale.mediaingestion.service.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

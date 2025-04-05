@@ -1,7 +1,7 @@
 package com.tenacy.pixiescale.transcodingworker.service.impl;
 
 import com.tenacy.pixiescale.transcodingworker.config.FFmpegConfig;
-import com.tenacy.pixiescale.transcodingworker.domain.TranscodingTask;
+import com.tenacy.pixiescale.common.domain.TranscodingTask;
 import com.tenacy.pixiescale.transcodingworker.service.StorageService;
 import com.tenacy.pixiescale.transcodingworker.service.TranscodingWorker;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +46,7 @@ public class FFmpegTranscodingWorker implements TranscodingWorker {
                 }
 
                 // 임시 출력 파일 생성
-                Path tempOutputPath = createTempFile(null, "output");
+                Path tempOutputPath = createTempFile(null, "output", task);
 
                 // FFmpeg 명령 구성 및 실행
                 List<String> command = buildFFmpegCommand(
@@ -207,13 +207,15 @@ public class FFmpegTranscodingWorker implements TranscodingWorker {
         return command;
     }
 
-    private Path createTempFile(Path sourcePath, String prefix) throws IOException {
+    private Path createTempFile(Path sourcePath, String prefix, TranscodingTask task) throws IOException {
         Path tempDir = Paths.get(ffmpegConfig.getTempDir());
         if (!Files.exists(tempDir)) {
             Files.createDirectories(tempDir);
         }
 
-        Path tempFile = Files.createTempFile(tempDir, prefix + "-", ".tmp");
+        // 타겟 포맷에 맞는 확장자 사용
+        String extension = getFileExtension(task.getTargetFormat());
+        Path tempFile = Files.createTempFile(tempDir, prefix + "-", "." + extension);
 
         if (sourcePath != null && Files.exists(sourcePath)) {
             Files.copy(sourcePath, tempFile, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
