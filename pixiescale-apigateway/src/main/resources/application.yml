@@ -1,11 +1,23 @@
 server:
   port: 8080
+  netty:
+    connection-timeout: 600s
 
 spring:
   application:
     name: pixiescale-apigateway
+  codec:
+    max-in-memory-size: 16MB  # WebFlux 코덱 메모리 제한
+  webflux:
+    multipart:
+      max-in-memory-size: 16MB  # 멀티파트 파일 메모리 제한
   cloud:
     gateway:
+      httpserver:
+        wiretap: true  # 디버깅용 (프로덕션에서는 false)
+        httpclient:
+          response-timeout: 600s
+          connect-timeout: 60000
       routes:
         - id: mediaingestion
           uri: http://localhost:8081
@@ -48,3 +60,5 @@ logging:
     root: INFO
     com.tenacy.pixiescale: DEBUG
     org.springframework.cloud.gateway: DEBUG
+    org.springframework.boot.actuate: DEBUG
+    org.springframework.web: DEBUG

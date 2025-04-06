@@ -11,6 +11,9 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.add.type.headers: true
+        fetch.min.bytes: 1024
+        fetch.max.wait.ms: 500
+        max.poll.records: 500
   servlet:
     multipart:
       max-file-size: 2000MB
@@ -18,6 +21,8 @@ spring:
     webflux:
       multipart:
         max-in-memory-size: 20MB
+  codec:
+    max-in-memory-size: 16MB
 
 management:
   endpoints:

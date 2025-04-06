@@ -48,37 +48,45 @@ public class StorageController {
                 });
     }
 
-    private String determineContentType(String filePath) {
-        String extension = filePath.substring(filePath.lastIndexOf('.') + 1).toLowerCase();
-
-        switch (extension) {
-            case "mp4":
-                return "video/mp4";
-            case "webm":
-                return "video/webm";
-            case "mkv":
-                return "video/x-matroska";
-            case "avi":
-                return "video/x-msvideo";
-            case "mov":
-                return "video/quicktime";
-            case "wmv":
-                return "video/x-ms-wmv";
-            case "flv":
-                return "video/x-flv";
-            case "m4v":
-                return "video/x-m4v";
-            case "m3u8":
-                return "application/x-mpegURL";
-            case "ts":
-                return "video/MP2T";
-            case "3gp":
-                return "video/3gpp";
-            case "mpg":
-            case "mpeg":
-                return "video/mpeg";
-            default:
-                return "application/octet-stream";
+    private String determineContentType(Resource resource) {
+        try {
+            Path path = resource.getFile().toPath();
+            return Files.probeContentType(path);
+        } catch (IOException e) {
+            String fileName = resource.getFilename();
+            if (fileName != null) {
+                String extension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+                switch (extension) {
+                    case "mp4":
+                        return "video/mp4";
+                    case "webm":
+                        return "video/webm";
+                    case "mkv":
+                        return "video/x-matroska";
+                    case "avi":
+                        return "video/x-msvideo";
+                    case "mov":
+                        return "video/quicktime";
+                    case "wmv":
+                        return "video/x-ms-wmv";
+                    case "flv":
+                        return "video/x-flv";
+                    case "m4v":
+                        return "video/x-m4v";
+                    case "m3u8":
+                        return "application/x-mpegURL";
+                    case "ts":
+                        return "video/MP2T";
+                    case "3gp":
+                        return "video/3gpp";
+                    case "mpg":
+                    case "mpeg":
+                        return "video/mpeg";
+                    default:
+                        return "application/octet-stream";
+                }
+            }
+            return MediaType.APPLICATION_OCTET_STREAM_VALUE;
         }
     }
 }

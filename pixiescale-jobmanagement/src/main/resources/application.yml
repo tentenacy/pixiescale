@@ -16,11 +16,19 @@ spring:
         spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
         spring.json.trusted.packages: "*"
         spring.json.value.default.type: com.tenacy.pixiescale.common.event.MediaUploadedEvent
+        compression.type: snappy
+        linger.ms: 20
+        batch.size: 32768
+        buffer.memory: 33554432
+        max.in.flight.requests.per.connection: 5
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.add.type.headers: true
+        fetch.min.bytes: 1024
+        fetch.max.wait.ms: 500
+        max.poll.records: 500
   data:
     redis:
       host: localhost

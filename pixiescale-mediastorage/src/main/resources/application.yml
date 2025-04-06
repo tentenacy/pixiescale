@@ -9,15 +9,26 @@ spring:
     consumer:
       group-id: mediastorage-group
       auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       properties:
-        spring.json.trusted.packages: com.tenacy.pixiescale.mediastorage.*,java.util,java.time
+        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "*"
+        spring.json.value.default.type: com.tenacy.pixiescale.common.event.TranscodingTaskEvent
+        compression.type: snappy
+        linger.ms: 20
+        batch.size: 32768
+        buffer.memory: 33554432
+        max.in.flight.requests.per.connection: 5
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
       properties:
         spring.json.add.type.headers: true
+        fetch.min.bytes: 1024
+        fetch.max.wait.ms: 500
+        max.poll.records: 500
 
 management:
   endpoints:
