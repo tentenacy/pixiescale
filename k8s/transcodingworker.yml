@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transcodingworker
+  namespace: pixiescale
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transcodingworker
+  template:
+    metadata:
+      labels:
+        app: transcodingworker
+    spec:
+      containers:
+        - name: transcodingworker
+          image: pixiescale-transcodingworker:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8083
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: SPRING_PROFILES_ACTIVE
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-service:9092"  # 직접 값 설정
+            - name: APP_KAFKA_TOPICS_TRANSCODING_TASK
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_TOPIC_TRANSCODING_TASK
+            - name: APP_KAFKA_TOPICS_TASK_RESULT
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_TOPIC_TASK_RESULT
+            - name: STORAGE_BASE_DIR
+              value: "/app/media/output"
+            - name: APP_MEDIA_SOURCE_DIR
+              value: "/app/media/uploads"
+            - name: FFMPEG_BINARY_PATH
+              value: "ffmpeg"
+            - name: FFMPEG_TEMP_DIR
+              value: "/app/media/temp"
+            - name: FFMPEG_GPU_ACCELERATION
+              value: "false"
+            - name: FFMPEG_GPU_DEVICE
+              value: "0"
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "500m"
+            limits:
+              memory: "3Gi"
+              cpu: "1000m"
+          volumeMounts:
+            - name: media-uploads
+              mountPath: /app/media/uploads
+              readOnly: true
+            - name: media-output
+              mountPath: /app/media/output
+            - name: media-temp
+              mountPath: /app/media/temp
+      volumes:
+        - name: media-uploads
+          persistentVolumeClaim:
+            claimName: media-uploads-pvc
+        - name: media-output
+          persistentVolumeClaim:
+            claimName: media-output-pvc
+        - name: media-temp
+          persistentVolumeClaim:
+            claimName: media-temp-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: transcodingworker-service
+  namespace: pixiescale
+spec:
+  selector:
+    app: transcodingworker
+  ports:
+    - port: 8083
+      targetPort: 8083
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: transcodingworker-hpa
+  namespace: pixiescale
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: transcodingworker
+  minReplicas: 3
+  maxReplicas: 7
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 60
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 120

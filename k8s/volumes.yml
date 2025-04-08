@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-uploads-pv
+  namespace: pixiescale
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  storageClassName: standard
+  hostPath:
+    path: "/tmp/minikube-pixiescale/media/uploads"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-uploads-pvc
+  namespace: pixiescale
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-output-pv
+  namespace: pixiescale
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  storageClassName: standard
+  hostPath:
+    path: "/tmp/minikube-pixiescale/media/output"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-output-pvc
+  namespace: pixiescale
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: media-temp-pv
+  namespace: pixiescale
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteMany
+  storageClassName: standard
+  hostPath:
+    path: "/tmp/minikube-pixiescale/media/temp"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: media-temp-pvc
+  namespace: pixiescale
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: standard

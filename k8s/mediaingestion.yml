@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mediaingestion
+  namespace: pixiescale
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mediaingestion
+  template:
+    metadata:
+      labels:
+        app: mediaingestion
+    spec:
+      containers:
+        - name: mediaingestion
+          image: pixiescale-mediaingestion:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: SPRING_PROFILES_ACTIVE
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_BOOTSTRAP_SERVERS
+            - name: APP_KAFKA_TOPICS_MEDIA_UPLOADED
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_TOPIC_MEDIA_UPLOADED
+            - name: STORAGE_BASE_DIR
+              value: "/app/media/uploads"
+            - name: FFMPEG_BINARY_PATH
+              value: "ffmpeg"
+            - name: FFMPEG_TEMP_DIR
+              value: "/app/media/temp"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "300m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          volumeMounts:
+            - name: media-uploads
+              mountPath: /app/media/uploads
+            - name: media-temp
+              mountPath: /app/media/temp
+      volumes:
+        - name: media-uploads
+          persistentVolumeClaim:
+            claimName: media-uploads-pvc
+        - name: media-temp
+          persistentVolumeClaim:
+            claimName: media-temp-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mediaingestion-service
+  namespace: pixiescale
+spec:
+  selector:
+    app: mediaingestion
+  ports:
+    - port: 8081
+      targetPort: 8081
+  type: ClusterIP

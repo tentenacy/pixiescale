@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apigateway
+  namespace: pixiescale
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apigateway
+  template:
+    metadata:
+      labels:
+        app: apigateway
+    spec:
+      containers:
+        - name: apigateway
+          image: pixiescale-apigateway:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: SPRING_PROFILES_ACTIVE
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_0_URI
+              value: "http://mediaingestion-service.pixiescale.svc.cluster.local:8081"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0
+              value: "Path=/api/v1/media/**"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_1_URI
+              value: "http://jobmanagement-service.pixiescale.svc.cluster.local:8082"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0
+              value: "Path=/api/v1/jobs/**"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_URI
+              value: "http://transcodingworker-service.pixiescale.svc.cluster.local:8083"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0
+              value: "Path=/api/v1/transcoding/**"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_URI
+              value: "http://mediastorage-service.pixiescale.svc.cluster.local:8084"
+            - name: SPRING_CLOUD_GATEWAY_ROUTES_3_PREDICATES_0
+              value: "Path=/api/v1/storage/**"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apigateway-service
+  namespace: pixiescale
+spec:
+  selector:
+    app: apigateway
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: NodePort

@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mediastorage
+  namespace: pixiescale
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mediastorage
+  template:
+    metadata:
+      labels:
+        app: mediastorage
+    spec:
+      containers:
+        - name: mediastorage
+          image: pixiescale-mediastorage:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8084
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: SPRING_PROFILES_ACTIVE
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_BOOTSTRAP_SERVERS
+            - name: APP_KAFKA_TOPICS_TASK_RESULT
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_TOPIC_TASK_RESULT
+            - name: APP_KAFKA_TOPICS_STORAGE_RESULT
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_TOPIC_STORAGE_RESULT
+            - name: STORAGE_BASE_DIR
+              value: "/app/media/output"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "300m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          volumeMounts:
+            - name: media-output
+              mountPath: /app/media/output
+      volumes:
+        - name: media-output
+          persistentVolumeClaim:
+            claimName: media-output-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mediastorage-service
+  namespace: pixiescale
+spec:
+  selector:
+    app: mediastorage
+  ports:
+    - port: 8084
+      targetPort: 8084

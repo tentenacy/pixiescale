@@ -3,4 +3,4 @@ spring:
     bootstrap-servers: kafka:9092
 
 storage:
-  base-dir: /app/output
+  base-dir: /app/media/output

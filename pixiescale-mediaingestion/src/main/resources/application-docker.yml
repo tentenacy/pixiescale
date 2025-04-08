@@ -6,4 +6,4 @@ storage:
   base-dir: /app/media/uploads
 
 ffmpeg:
-  temp-dir: /app/temp
+  temp-dir: /app/media/temp

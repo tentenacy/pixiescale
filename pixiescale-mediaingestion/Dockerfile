@@ -15,7 +15,7 @@ COPY --from=build /app/build/libs/*.jar app.jar
 RUN apk add --no-cache ffmpeg
 
 # Create directories
-RUN mkdir -p /app/media/uploads /app/temp
+RUN mkdir -p /app/media/uploads /app/media/temp
 
 # Set environment variables
 ENV SPRING_PROFILES_ACTIVE=docker

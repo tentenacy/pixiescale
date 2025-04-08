@@ -14,13 +14,13 @@ spring:
 
 ffmpeg:
   binary-path: ffmpeg
-  temp-dir: ${java.io.tmpdir}/pixiescale-test/temp
+  temp-dir: ${java.io.tmpdir}/pixiescale-test/media/temp
   timeout-seconds: 5
   gpu-acceleration: false
   gpu-device: "0"
 
 storage:
-  base-dir: ${java.io.tmpdir}/pixiescale-test/output
+  base-dir: ${java.io.tmpdir}/pixiescale-test/media/output
 
 app:
   media:

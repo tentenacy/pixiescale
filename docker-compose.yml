@@ -69,7 +69,7 @@ services:
       - "8083:8083"
     volumes:
       - media-uploads:/app/media/uploads
-      - media-output:/app/output
+      - media-output:/app/media/output
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - JAVA_OPTS=-Xms256m -Xmx512m
@@ -91,8 +91,7 @@ services:
     ports:
       - "8084:8084"
     volumes:
-      - media-transcoded:/app/media/transcoded
-      - media-output:/app/output:ro
+      - media-output:/app/media/output:ro
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - JAVA_OPTS=-Xms256m -Xmx512m

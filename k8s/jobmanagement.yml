@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jobmanagement
+  namespace: pixiescale
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jobmanagement
+  template:
+    metadata:
+      labels:
+        app: jobmanagement
+    spec:
+      containers:
+        - name: jobmanagement
+          image: pixiescale-jobmanagement:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8082
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: SPRING_PROFILES_ACTIVE
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_BOOTSTRAP_SERVERS
+            - name: APP_KAFKA_TOPICS_MEDIA_UPLOADED
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_TOPIC_MEDIA_UPLOADED
+            - name: APP_KAFKA_TOPICS_JOB_CREATED
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_TOPIC_JOB_CREATED
+            - name: APP_KAFKA_TOPICS_JOB_UPDATED
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_TOPIC_JOB_UPDATED
+            - name: APP_KAFKA_TOPICS_TRANSCODING_TASK
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_TOPIC_TRANSCODING_TASK
+            - name: APP_KAFKA_TOPICS_TASK_RESULT
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_TOPIC_TASK_RESULT
+            - name: APP_KAFKA_TOPICS_STORAGE_RESULT
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: KAFKA_TOPIC_STORAGE_RESULT
+            - name: SPRING_DATA_REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: REDIS_HOST
+            - name: SPRING_DATA_REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: pixiescale-config
+                  key: REDIS_PORT
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "300m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jobmanagement-service
+  namespace: pixiescale
+spec:
+  selector:
+    app: jobmanagement
+  ports:
+    - port: 8082
+      targetPort: 8082

@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 COPY --from=build /app/build/libs/*.jar app.jar
 
 # 기본 디렉토리 생성
-RUN mkdir -p /app/media/uploads /app/temp /app/output
+RUN mkdir -p /app/media/uploads /app/media/temp /app/media/output
 
 # 환경 변수
 ENV SPRING_PROFILES_ACTIVE=docker

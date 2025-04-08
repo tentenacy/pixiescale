@@ -50,7 +50,7 @@ logging:
 
 storage:
   type: local
-  base-dir: ${user.home}/pixiescale/output
+  base-dir: ${user.home}/pixiescale/media/output
   upload-part-size: 5
   max-upload-size: 2000
 

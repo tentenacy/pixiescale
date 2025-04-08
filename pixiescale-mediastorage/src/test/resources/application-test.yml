@@ -20,4 +20,4 @@ app:
 
 storage:
   type: local
-  base-dir: ${java.io.tmpdir}/pixiescale-test/media/transcoded
+  base-dir: ${java.io.tmpdir}/pixiescale-test/media/output

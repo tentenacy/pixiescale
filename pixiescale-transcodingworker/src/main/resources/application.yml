@@ -60,7 +60,7 @@ ffmpeg:
   buffer-size: 32
 
 storage:
-  base-dir: ${java.io.tmpdir}/pixiescale/output
+  base-dir: ${java.io.tmpdir}/pixiescale/media/output
 
 app:
   media:

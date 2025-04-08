@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pixiescale-config
+  namespace: pixiescale
+data:
+  SPRING_PROFILES_ACTIVE: "k8s"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-service:9092"
+  KAFKA_TOPIC_MEDIA_UPLOADED: "media-uploaded"
+  KAFKA_TOPIC_JOB_CREATED: "job-created"
+  KAFKA_TOPIC_JOB_UPDATED: "job-updated"
+  KAFKA_TOPIC_TRANSCODING_TASK: "transcoding-task"
+  KAFKA_TOPIC_TASK_RESULT: "task-result"
+  KAFKA_TOPIC_STORAGE_RESULT: "storage-result"
+  STORAGE_BASE_DIR: "/app/media"
+  REDIS_HOST: "redis-service"
+  REDIS_PORT: "6379"
