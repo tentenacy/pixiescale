@@ -143,11 +143,25 @@ function build_images {
     docker compose build $(docker compose config --services | grep -v "common")
 
     echo -e "${GREEN}도커 이미지 빌드가 완료되었습니다!${NC}"
+
+    # Minikube에 이미지 로드
+    echo -e "${YELLOW}빌드된 이미지를 Minikube에 로드합니다...${NC}"
+
+    # pixiescale 자체 이미지만 로드 (외부 이미지 제외)
+    CUSTOM_SERVICES=("apigateway" "mediaingestion" "jobmanagement" "mediastorage" "transcodingworker")
+
+    for SERVICE in "${CUSTOM_SERVICES[@]}"; do
+        IMAGE_NAME="pixiescale-${SERVICE}:latest"
+        echo "이미지 로드 중: ${IMAGE_NAME}"
+        minikube image load ${IMAGE_NAME}
+    done
+
+    echo -e "${GREEN}이미지 로드가 완료되었습니다!${NC}"
 }
 
 # 포트 포워딩 시작 함수
 function start_port_forwarding {
-    echo -e "${YELLOW}포트 포워딩을 시작합니다...${NC}"
+    echo -e "${YELLOW}모니터링 서비스 포트 포워딩을 시작합니다...${NC}"
 
     # API 게이트웨이 서비스 찾기
     API_SERVICE=$(kubectl get services -n $NAMESPACE | grep -i api | head -1 | awk '{print $1}')
@@ -160,21 +174,87 @@ function start_port_forwarding {
         return 1
     fi
 
-    # 포트 포워딩 시작
+    # Prometheus 서비스 찾기
+    PROMETHEUS_SERVICE=$(kubectl get services -n $NAMESPACE | grep -i prometheus | head -1 | awk '{print $1}')
+    if [ -z "$PROMETHEUS_SERVICE" ]; then
+        echo -e "${RED}Prometheus 서비스를 찾을 수 없습니다!${NC}"
+        return 1
+    fi
+
+    # Grafana 서비스 찾기
+    GRAFANA_SERVICE=$(kubectl get services -n $NAMESPACE | grep -i grafana | head -1 | awk '{print $1}')
+    if [ -z "$GRAFANA_SERVICE" ]; then
+        echo -e "${RED}Grafana 서비스를 찾을 수 없습니다!${NC}"
+        return 1
+    fi
+
+    # API 게이트웨이 포트 포워딩 시작
     kubectl port-forward service/$API_SERVICE 8080:8080 -n $NAMESPACE > /dev/null 2>&1 &
-    PF_PID=$!
+    API_PF_PID=$!
+
+    # Prometheus 포트 포워딩 시작
+    kubectl port-forward service/$PROMETHEUS_SERVICE 9090:9090 -n $NAMESPACE > /dev/null 2>&1 &
+    PROMETHEUS_PF_PID=$!
+
+    # Grafana 포트 포워딩 시작
+    kubectl port-forward service/$GRAFANA_SERVICE 3000:3000 -n $NAMESPACE > /dev/null 2>&1 &
+    GRAFANA_PF_PID=$!
 
     # 연결 확인
     sleep 2
-    if ps -p $PF_PID > /dev/null; then
-        echo -e "${GREEN}포트 포워딩이 성공적으로 시작되었습니다 (PID: $PF_PID)${NC}"
-        echo -e "접속 URL: ${GREEN}http://localhost:8080${NC}"
-        return 0
+    API_RUNNING=true
+    PROMETHEUS_RUNNING=true
+    GRAFANA_RUNNING=true
+
+    if ! ps -p $API_PF_PID > /dev/null; then
+        echo -e "${RED}API 게이트웨이 포트 포워딩 시작 실패${NC}"
+        API_RUNNING=false
+    fi
+
+    if ! ps -p $PROMETHEUS_PF_PID > /dev/null; then
+        echo -e "${RED}Prometheus 포트 포워딩 시작 실패${NC}"
+        PROMETHEUS_RUNNING=false
+    fi
+
+    if ! ps -p $GRAFANA_PF_PID > /dev/null; then
+        echo -e "${RED}Grafana 포트 포워딩 시작 실패${NC}"
+        GRAFANA_RUNNING=false
+    fi
+
+    echo -e "${GREEN}포트 포워딩 상태:${NC}"
+    if [ "$API_RUNNING" = true ]; then
+        echo -e "API 게이트웨이: ${GREEN}http://localhost:8080${NC} (PID: $API_PF_PID)"
     else
-        echo -e "${RED}포트 포워딩 시작 실패${NC}"
-        echo -e "${YELLOW}수동으로 포트 포워딩을 실행하세요: kubectl port-forward service/$API_SERVICE 8080:8080 -n $NAMESPACE${NC}"
+        echo -e "API 게이트웨이: ${RED}실패${NC}"
+    fi
+
+    if [ "$PROMETHEUS_RUNNING" = true ]; then
+        echo -e "Prometheus: ${GREEN}http://localhost:9090${NC} (PID: $PROMETHEUS_PF_PID)"
+    else
+        echo -e "Prometheus: ${RED}실패${NC}"
+    fi
+
+    if [ "$GRAFANA_RUNNING" = true ]; then
+        echo -e "Grafana: ${GREEN}http://localhost:3000${NC} (PID: $GRAFANA_PF_PID) (사용자명/비밀번호: admin/admin)"
+    else
+        echo -e "Grafana: ${RED}실패${NC}"
+    fi
+
+    if [ "$API_RUNNING" = false ] || [ "$PROMETHEUS_RUNNING" = false ] || [ "$GRAFANA_RUNNING" = false ]; then
+        echo -e "${YELLOW}일부 포트 포워딩이 실패했습니다. 수동으로 포트 포워딩을 설정하세요:${NC}"
+        if [ "$API_RUNNING" = false ]; then
+            echo -e "${YELLOW}kubectl port-forward service/$API_SERVICE 8080:8080 -n $NAMESPACE${NC}"
+        fi
+        if [ "$PROMETHEUS_RUNNING" = false ]; then
+            echo -e "${YELLOW}kubectl port-forward service/$PROMETHEUS_SERVICE 9090:9090 -n $NAMESPACE${NC}"
+        fi
+        if [ "$GRAFANA_RUNNING" = false ]; then
+            echo -e "${YELLOW}kubectl port-forward service/$GRAFANA_SERVICE 3000:3000 -n $NAMESPACE${NC}"
+        fi
         return 1
     fi
+
+    return 0
 }
 
 # 배포 함수
@@ -183,7 +263,7 @@ function deploy_services {
 
     # 기존 포트 포워딩 종료
     echo "기존 포트 포워딩 종료 중..."
-    pkill -f "kubectl port-forward.*apigateway" 2>/dev/null || true
+    pkill -f "kubectl port-forward" 2>/dev/null || true
 
     # 네임스페이스 생성 (존재하지 않는 경우)
     if ! kubectl get namespace $NAMESPACE &> /dev/null; then
@@ -193,6 +273,11 @@ function deploy_services {
 
     # 기본 인프라 구성 요소 적용
     echo "기본 인프라 구성 요소 적용 중..."
+
+    # Secrets 적용
+    if [ -f "k8s/secrets.yml" ]; then
+        kubectl apply -f k8s/secrets.yml -n $NAMESPACE
+    fi
 
     # ConfigMap 적용
     if [ -f "k8s/configmap.yml" ]; then
@@ -213,6 +298,8 @@ function deploy_services {
     kubectl apply -f k8s/jobmanagement.yml -n $NAMESPACE
     kubectl apply -f k8s/mediastorage.yml -n $NAMESPACE
     kubectl apply -f k8s/transcodingworker.yml -n $NAMESPACE
+    kubectl apply -f k8s/prometheus.yml -n $NAMESPACE
+    kubectl apply -f k8s/grafana.yml -n $NAMESPACE
 
     # 모니터링 서비스 배포 (존재하는 경우)
     if [ -f "k8s/monitoring.yml" ]; then

@@ -2,6 +2,7 @@ package com.tenacy.pixiescale.transcodingworker.service.impl;
 
 import com.tenacy.pixiescale.transcodingworker.config.FFmpegConfig;
 import com.tenacy.pixiescale.common.domain.TranscodingTask;
+import com.tenacy.pixiescale.transcodingworker.metrics.TranscodingMetrics;
 import com.tenacy.pixiescale.transcodingworker.service.StorageService;
 import com.tenacy.pixiescale.transcodingworker.service.TranscodingWorker;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -33,6 +34,7 @@ public class FFmpegTranscodingWorker implements TranscodingWorker {
     private final FFmpegConfig ffmpegConfig;
     private final StorageService storageService;
     private final MeterRegistry meterRegistry;;
+    private final TranscodingMetrics metrics;
 
     @Value("${app.media.source-dir}")
     private String sourceMediaDir;
@@ -161,22 +163,12 @@ public class FFmpegTranscodingWorker implements TranscodingWorker {
                                 }
                         );
 
-                // 성공 시 타이머 기록
-                sample.stop(Timer.builder("transcoding.duration")
-                        .tag("status", "success")
-                        .tag("format", task.getTargetFormat())
-                        .tag("resolution", task.getTargetWidth() + "x" + task.getTargetHeight())
-                        .register(meterRegistry));
-
-                // 작업 결과 반환
+                metrics.recordCompletedJob();
+                metrics.stopTimerSample(sample);
                 sink.success(task);
             } catch (Exception e) {
-                sample.stop(Timer.builder("transcoding.duration")
-                        .tag("status", "failed")
-                        .tag("format", task.getTargetFormat())
-                        .tag("resolution", task.getTargetWidth() + "x" + task.getTargetHeight())
-                        .register(meterRegistry));
-
+                metrics.recordFailedJob();
+                metrics.stopTimerSample(sample);
                 sink.error(e);
             }
         }).subscribeOn(Schedulers.boundedElastic()); // 전용 스레드 풀에서 실행

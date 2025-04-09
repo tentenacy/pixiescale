@@ -13,6 +13,10 @@ spec:
       labels:
         app: transcodingworker
     spec:
+      initContainers:
+        - name: wait-for-kafka
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nc -z kafka-service 9092; do echo "Waiting for Kafka to be ready..."; sleep 2; done;']
       containers:
         - name: transcodingworker
           image: pixiescale-transcodingworker:latest
@@ -26,7 +30,7 @@ spec:
                   name: pixiescale-config
                   key: SPRING_PROFILES_ACTIVE
             - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
-              value: "kafka-service:9092"  # 직접 값 설정
+              value: "kafka-service:9092"
             - name: APP_KAFKA_TOPICS_TRANSCODING_TASK
               valueFrom:
                 configMapKeyRef:
@@ -64,6 +68,22 @@ spec:
               mountPath: /app/media/output
             - name: media-temp
               mountPath: /app/media/temp
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8083
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8083
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
       volumes:
         - name: media-uploads
           persistentVolumeClaim:

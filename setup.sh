@@ -28,7 +28,11 @@ minikube delete || true
 
 # 새 Minikube 클러스터 시작 (GPU 없이)
 echo -e "${YELLOW}새 Minikube 클러스터를 생성합니다 (GPU 없이)...${NC}"
-minikube start --driver=docker --cpus=8 --memory=16g --kubernetes-version=v1.28.0
+minikube start --driver=docker --cpus=8 --memory=12g --kubernetes-version=v1.28.0
+
+# metrics-server 활성화
+echo -e "${YELLOW}Kubernetes Metrics Server를 활성화합니다...${NC}"
+minikube addons enable metrics-server
 
 # 필요한 디렉토리 생성
 echo -e "${YELLOW}필요한 디렉토리를 생성합니다...${NC}"
@@ -37,4 +41,4 @@ mkdir -p /tmp/minikube-pixiescale/media/output
 mkdir -p /tmp/minikube-pixiescale/media/temp
 chmod -R 777 /tmp/minikube-pixiescale
 
-echo -e "${GREEN}환경 설정이 완료되었습니다. 이제 './deploy.sh -r'를 실행하여 서비스를 빌드하고 배포하세요.${NC}"
+echo -e "${GREEN}환경 설정이 완료되었습니다. 이제 './pxctl.sh -b -d'를 실행하여 서비스를 빌드하고 배포하세요.${NC}"

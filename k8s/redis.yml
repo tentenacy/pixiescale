@@ -25,6 +25,13 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "500m"
+          args: ["--requirepass", "$(REDIS_PASSWORD)"]
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pixiescale-secrets
+                  key: redis-password
 ---
 apiVersion: v1
 kind: Service

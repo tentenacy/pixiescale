@@ -13,6 +13,13 @@ spec:
       labels:
         app: jobmanagement
     spec:
+      initContainers:
+        - name: wait-for-kafka
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nc -z kafka-service 9092; do echo "Waiting for Kafka to be ready..."; sleep 2; done;']
+        - name: wait-for-redis
+          image: busybox:1.28
+          command: ['sh', '-c', 'until nc -z redis-service 6379; do echo "Waiting for Redis to be ready..."; sleep 2; done;']
       containers:
         - name: jobmanagement
           image: pixiescale-jobmanagement:latest
@@ -70,6 +77,11 @@ spec:
                 configMapKeyRef:
                   name: pixiescale-config
                   key: REDIS_PORT
+            - name: SPRING_DATA_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pixiescale-secrets
+                  key: redis-password
           resources:
             requests:
               memory: "512Mi"
