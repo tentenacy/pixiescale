@@ -31,10 +31,12 @@ spring:
         max.poll.records: 500
 
 management:
+  server:
+    port: ${server.port}
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: "*"
   endpoint:
     health:
       show-details: always
@@ -46,6 +48,9 @@ management:
     export:
       prometheus:
         enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
     tags:
       application: ${spring.application.name}
 
@@ -57,13 +62,15 @@ logging:
 ffmpeg:
   binary-path: ffmpeg
   temp-dir: ${java.io.tmpdir}/pixiescale
-  timeout-seconds: 3600
-  gpu-acceleration: true
+  timeout-seconds: 900         # 15분
+  gpu-acceleration: true       # GPU 사용
   gpu-device: "0"
-  thread-count: 8
-  cpu-preset: "faster"
-  gpu-preset: "p2"
-  buffer-size: 32
+  thread-count: 1
+  cpu-preset: "faster"         # 빠른 인코딩 (메모리 사용량 감소)
+  gpu-preset: "p2"             # 빠른 GPU 인코딩
+  buffer-size: 16
+  analyze-duration: 5000000    # 분석 시간 5초
+  thread-queue-size: 256
 
 storage:
   base-dir: ${java.io.tmpdir}/pixiescale/media/output
@@ -75,3 +82,5 @@ app:
     topics:
       transcoding-task: transcoding-task
       task-result: task-result
+  transcoding:
+    max-concurrent-tasks: 1

@@ -12,6 +12,10 @@ spec:
     metadata:
       labels:
         app: apigateway
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
     spec:
       containers:
         - name: apigateway
@@ -54,6 +58,10 @@ kind: Service
 metadata:
   name: apigateway-service
   namespace: pixiescale
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/actuator/prometheus"
+    prometheus.io/port: "8080"
 spec:
   selector:
     app: apigateway

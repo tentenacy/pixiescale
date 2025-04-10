@@ -12,6 +12,10 @@ spec:
     metadata:
       labels:
         app: jobmanagement
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8082"
     spec:
       initContainers:
         - name: wait-for-kafka
@@ -95,6 +99,10 @@ kind: Service
 metadata:
   name: jobmanagement-service
   namespace: pixiescale
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/actuator/prometheus"
+    prometheus.io/port: "8082"
 spec:
   selector:
     app: jobmanagement

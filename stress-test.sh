@@ -8,45 +8,8 @@ NC='\033[0m' # 색상 리셋
 
 # 기본 파라미터
 FILE_PATH="sample.mp4"
-SCENARIO="gradual"  # gradual, burst, mixed
-DURATION=10         # 테스트 지속 시간 (분)
+DURATION=15         # 테스트 지속 시간 (분)
 API_ENDPOINT="http://localhost:8080"
-
-# 사용법 표시 함수
-function show_usage {
-    echo "사용법: $0 [옵션]"
-    echo "옵션:"
-    echo "  -f, --file PATH       테스트에 사용할 미디어 파일 경로 (기본값: sample.mp4)"
-    echo "  -s, --scenario TYPE   테스트 시나리오 (gradual, burst, mixed) (기본값: gradual)"
-    echo "  -d, --duration MINS   테스트 지속 시간 (분) (기본값: 10)"
-    echo "  -e, --endpoint URL    API 엔드포인트 URL (기본값: http://localhost:8080)"
-    echo "  -h, --help            도움말 표시"
-    echo ""
-    echo "시나리오 설명:"
-    echo "  gradual: 점진적으로 부하 증가 (HPA 점진적 스케일 아웃 테스트)"
-    echo "  burst:   갑작스런 고부하 발생 (HPA 빠른 대응 테스트)"
-    echo "  mixed:   다양한 크기의 파일 혼합 처리 (실제 환경 시뮬레이션)"
-    exit 1
-}
-
-# 인자 파싱
-while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        -f|--file) FILE_PATH="$2"; shift ;;
-        -s|--scenario) SCENARIO="$2"; shift ;;
-        -d|--duration) DURATION="$2"; shift ;;
-        -e|--endpoint) API_ENDPOINT="$2"; shift ;;
-        -h|--help) show_usage ;;
-        *) echo "알 수 없는 옵션: $1"; show_usage ;;
-    esac
-    shift
-done
-
-# 파일 존재 확인
-if [ ! -f "$FILE_PATH" ]; then
-    echo -e "${RED}오류: 파일을 찾을 수 없습니다 - ${FILE_PATH}${NC}"
-    exit 1
-fi
 
 # 필요한 도구 확인
 if ! command -v curl &> /dev/null; then
@@ -59,25 +22,14 @@ if ! command -v jq &> /dev/null; then
     exit 1
 fi
 
-# 시나리오별 설정
-case $SCENARIO in
-    gradual)
-        echo -e "${YELLOW}점진적 부하 증가 시나리오를 시작합니다...${NC}"
-        JOBS_PER_MINUTE=(1 2 3 5 8 13 21 34 55)
-        ;;
-    burst)
-        echo -e "${YELLOW}버스트 부하 시나리오를 시작합니다...${NC}"
-        JOBS_PER_MINUTE=(0 0 30 0 0 30 0 0 30)
-        ;;
-    mixed)
-        echo -e "${YELLOW}혼합 부하 시나리오를 시작합니다...${NC}"
-        JOBS_PER_MINUTE=(2 5 10 15 10 5 2 5 10)
-        ;;
-    *)
-        echo -e "${RED}오류: 알 수 없는 시나리오 - ${SCENARIO}${NC}"
-        show_usage
-        ;;
-esac
+# 파일 존재 확인
+if [ ! -f "$FILE_PATH" ]; then
+    echo -e "${RED}오류: 파일을 찾을 수 없습니다 - ${FILE_PATH}${NC}"
+    exit 1
+fi
+
+# 완만한 부하 패턴 설정
+JOBS_PER_MINUTE=(1 1 2 3 5 8 13 21 34 55)
 
 # 테스트 결과 디렉토리 생성
 RESULTS_DIR="test_results_$(date +%Y%m%d_%H%M%S)"
@@ -85,7 +37,6 @@ mkdir -p $RESULTS_DIR
 
 # 테스트 정보 기록
 echo "테스트 시작 시간: $(date)" > $RESULTS_DIR/info.txt
-echo "시나리오: $SCENARIO" >> $RESULTS_DIR/info.txt
 echo "파일: $FILE_PATH" >> $RESULTS_DIR/info.txt
 echo "지속 시간: $DURATION 분" >> $RESULTS_DIR/info.txt
 echo "API 엔드포인트: $API_ENDPOINT" >> $RESULTS_DIR/info.txt
@@ -98,7 +49,8 @@ TOTAL_JOBS=0
 SUCCESS_JOBS=0
 FAILED_JOBS=0
 
-echo -e "${GREEN}테스트를 시작합니다...${NC}"
+echo -e "${GREEN}HPA 테스트를 시작합니다...${NC}"
+echo -e "${YELLOW}완만한 부하 증가 패턴으로 쿠버네티스 오토스케일링을 테스트합니다${NC}"
 
 for ((min=1; min<=DURATION; min++)); do
     # 현재 분에 실행할 작업 수 계산
@@ -135,7 +87,7 @@ for ((min=1; min<=DURATION; min++)); do
             continue
         fi
 
-        # 트랜스코딩 작업 생성
+        # 트랜스코딩 작업 생성 - 해상도 축소 (360p 제외)
         JOB_RESULT=$(curl -s -X POST -H "Content-Type: application/json" -d '{
             "mediaFileId": "'"$MEDIA_ID"'",
             "config": {
@@ -146,19 +98,13 @@ for ((min=1; min<=DURATION; min++)); do
                         "name": "720p",
                         "width": 1280,
                         "height": 720,
-                        "bitrate": 2500
+                        "bitrate": 2000
                     },
                     {
                         "name": "480p",
                         "width": 854,
                         "height": 480,
-                        "bitrate": 1500
-                    },
-                    {
-                        "name": "360p",
-                        "width": 640,
-                        "height": 360,
-                        "bitrate": 800
+                        "bitrate": 1200
                     }
                 ]
             }
@@ -182,8 +128,8 @@ for ((min=1; min<=DURATION; min++)); do
         echo -e "${GREEN}작업 생성 성공: $JOB_ID${NC}"
         MINUTE_SUCCESS=$((MINUTE_SUCCESS+1))
 
-        # 작업 간 짧은 대기
-        sleep 0.5
+        # 작업 간 대기 시간 증가
+        sleep 2
     done
 
     # 분 단위 결과 기록
@@ -215,4 +161,9 @@ echo "성공률: $(( (SUCCESS_JOBS * 100) / (TOTAL_JOBS > 0 ? TOTAL_JOBS : 1) ))
 
 # 결과 저장
 echo "총 작업: $TOTAL_JOBS" >> $RESULTS_DIR/summary.txt
-echo "성공: $SUCCESS_JOBS"
+echo "성공: $SUCCESS_JOBS" >> $RESULTS_DIR/summary.txt
+echo "실패: $FAILED_JOBS" >> $RESULTS_DIR/summary.txt
+echo "성공률: $(( (SUCCESS_JOBS * 100) / (TOTAL_JOBS > 0 ? TOTAL_JOBS : 1) ))%" >> $RESULTS_DIR/summary.txt
+echo "테스트 종료 시간: $(date)" >> $RESULTS_DIR/summary.txt
+
+echo -e "${GREEN}결과가 ${RESULTS_DIR} 디렉토리에 저장되었습니다${NC}"

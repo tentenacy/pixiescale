@@ -8,9 +8,13 @@ import com.tenacy.pixiescale.transcodingworker.service.TranscodingWorker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
+import reactor.core.scheduler.Scheduler;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
@@ -19,9 +23,17 @@ public class TranscodingTaskListener {
 
     private final TranscodingWorker transcodingWorker;
     private final EventPublisher eventPublisher;
+    private final Scheduler transcodingScheduler;
 
-    @KafkaListener(topics = "${app.kafka.topics.transcoding-task}", groupId = "${spring.kafka.consumer.group-id}")
-    public void handleTranscodingTask(TranscodingTaskEvent event) {
+    // 동시 실행 중인 작업 수 추적
+    private final AtomicInteger activeTasksCount = new AtomicInteger(0);
+    // 작업 ID를 키로 사용하는 활성 작업 맵
+    private final ConcurrentHashMap<String, TranscodingTask> activeTasks = new ConcurrentHashMap<>();
+
+    @KafkaListener(topics = "${app.kafka.topics.transcoding-task}",
+            groupId = "${spring.kafka.consumer.group-id}",
+            containerFactory = "kafkaListenerContainerFactory")
+    public void handleTranscodingTask(TranscodingTaskEvent event, Acknowledgment ack) {
         log.info("Received transcoding task event: {}", event.getTaskId());
 
         TranscodingTask task = TranscodingTask.builder()
@@ -35,6 +47,10 @@ public class TranscodingTaskListener {
                 .startedAt(LocalDateTime.now())
                 .build();
 
+        // 활성 작업 맵에 추가
+        activeTasks.put(task.getId(), task);
+        activeTasksCount.incrementAndGet();
+
         transcodingWorker.processTask(task)
                 .doOnSuccess(processedTask -> {
                     TaskResultEvent resultEvent = TaskResultEvent.builder()
@@ -45,7 +61,13 @@ public class TranscodingTaskListener {
                             .completedAt(LocalDateTime.now())
                             .build();
 
-                    eventPublisher.publishTaskResult(resultEvent).subscribe();
+                    eventPublisher.publishTaskResult(resultEvent)
+                            .doFinally(signal -> {
+                                // 작업 완료 후 상태 정리 및 오프셋 커밋
+                                cleanupTask(task.getId());
+                                ack.acknowledge();
+                            })
+                            .subscribe();
                 })
                 .doOnError(error -> {
                     TaskResultEvent resultEvent = TaskResultEvent.builder()
@@ -56,8 +78,20 @@ public class TranscodingTaskListener {
                             .completedAt(LocalDateTime.now())
                             .build();
 
-                    eventPublisher.publishTaskResult(resultEvent).subscribe();
+                    eventPublisher.publishTaskResult(resultEvent)
+                            .doFinally(signal -> {
+                                // 작업 실패 후 상태 정리 및 오프셋 커밋
+                                cleanupTask(task.getId());
+                                ack.acknowledge();
+                            })
+                            .subscribe();
                 })
+                .subscribeOn(transcodingScheduler)
                 .subscribe();
+    }
+
+    private void cleanupTask(String taskId) {
+        activeTasks.remove(taskId);
+        activeTasksCount.decrementAndGet();
     }
 }

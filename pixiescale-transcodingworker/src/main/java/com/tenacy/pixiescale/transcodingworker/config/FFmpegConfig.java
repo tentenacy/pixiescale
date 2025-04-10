@@ -13,8 +13,10 @@ public class FFmpegConfig {
     private int timeoutSeconds = 3600;
     private boolean gpuAcceleration = false;
     private String gpuDevice = "0";
-    private int threadCount = 0; // 0은 자동 감지
-    private String cpuPreset = "medium"; // ultrafast, superfast, veryfast, faster, fast, medium, slow, slower, veryslow
-    private String gpuPreset = "p4"; // p1-p7 (NVIDIA 프리셋)
-    private int bufferSize = 16; // 버퍼 크기 (MB)
+    private int threadCount = 0;
+    private String cpuPreset = "medium";
+    private String gpuPreset = "p4";
+    private int bufferSize = 16;
+    private int analyzeDuration = 5000000;
+    private int threadQueueSize = 256;
 }

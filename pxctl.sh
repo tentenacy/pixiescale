@@ -12,21 +12,25 @@ NAMESPACE="pixiescale"
 CLEAN=false
 DEPLOY=false
 BUILD_IMAGES=false
+BUILD_SERVICES=()
 
 # 도움말 표시
 function show_help {
     echo -e "${BLUE}PixieScale 관리 도구${NC}"
-    echo "사용법: $0 [옵션]"
+    echo "사용법: $0 [옵션] [서비스명...]"
     echo "옵션:"
     echo "  -h, --help        도움말 표시"
     echo "  -c, --clean       환경 완전 정리 (데이터 및 쿠버네티스 리소스 삭제)"
     echo "  -b, --build       도커 이미지 빌드 (docker-compose 사용)"
+    echo "                    서비스명을 지정하면 해당 서비스만 빌드 (예: -b apigateway mediaingestion)"
     echo "  -d, --deploy      전체 배포 실행"
     echo "  -a, --all         이미지 빌드 및 배포 모두 수행"
     echo ""
     echo "일반적인 사용 시나리오:"
     echo "  $0 -c             환경 완전 정리 (프로젝트 리셋)"
     echo "  $0 -d             새 배포 실행 (기존 이미지 사용)"
+    echo "  $0 -b             모든 서비스 이미지 빌드"
+    echo "  $0 -b apigateway  apigateway 서비스만 빌드"
     echo "  $0 -b -d          이미지 빌드 및 배포 (코드 변경 시)"
     echo "  $0 -a             이미지 빌드 및 배포 수행 (-b -d와 동일)"
 }
@@ -35,13 +39,20 @@ function show_help {
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         -h|--help) show_help; exit 0 ;;
-        -c|--clean) CLEAN=true ;;
-        -b|--build) BUILD_IMAGES=true ;;
-        -d|--deploy) DEPLOY=true ;;
-        -a|--all) BUILD_IMAGES=true; DEPLOY=true ;;
+        -c|--clean) CLEAN=true; shift ;;
+        -b|--build)
+            BUILD_IMAGES=true
+            shift
+            # 다음 인자가 다른 옵션이 아니라면 서비스 이름으로 처리
+            while [[ "$#" -gt 0 && ! "$1" =~ ^- ]]; do
+                BUILD_SERVICES+=("$1")
+                shift
+            done
+            ;;
+        -d|--deploy) DEPLOY=true; shift ;;
+        -a|--all) BUILD_IMAGES=true; DEPLOY=true; shift ;;
         *) echo "알 수 없는 옵션: $1"; show_help; exit 1 ;;
     esac
-    shift
 done
 
 # 환경 정리 함수
@@ -49,37 +60,37 @@ function clean_environment {
     echo -e "${YELLOW}PixieScale 환경을 완전히 정리합니다...${NC}"
 
     # 기존 포트 포워딩 종료
-    echo "기존 포트 포워딩 종료 중..."
+    echo -e "${YELLOW}기존 포트 포워딩 종료 중...${NC}"
     pkill -f "kubectl port-forward" 2>/dev/null || true
 
     # 네임스페이스가 존재하는지 확인
     if kubectl get namespace $NAMESPACE &> /dev/null; then
         # 데이터 정리 (네임스페이스가 존재하는 경우에만)
-        echo "데이터 정리 중..."
+        echo -e "${YELLOW}데이터 정리 중...${NC}"
 
         # mediaingestion 파드 찾기 및 파일 삭제
         MEDIA_POD=$(kubectl get pods -n $NAMESPACE -l app=mediaingestion -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
         if [ -n "$MEDIA_POD" ]; then
-            echo "미디어 업로드 파일 삭제 중..."
+            echo -e "${YELLOW}미디어 업로드 파일 삭제 중...${NC}"
             kubectl exec -n $NAMESPACE $MEDIA_POD -- sh -c "rm -rf /app/media/uploads/* 2>/dev/null || true" &> /dev/null
         fi
 
         # transcodingworker 파드 찾기 및 파일 삭제
         WORKER_POD=$(kubectl get pods -n $NAMESPACE -l app=transcodingworker -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
         if [ -n "$WORKER_POD" ]; then
-            echo "트랜스코딩 임시 파일 삭제 중..."
+            echo -e "${YELLOW}트랜스코딩 임시 파일 삭제 중...${NC}"
             kubectl exec -n $NAMESPACE $WORKER_POD -- sh -c "rm -rf /app/output/* 2>/dev/null || true" &> /dev/null
         fi
 
         # mediastorage 파드 찾기 및 파일 삭제
         STORAGE_POD=$(kubectl get pods -n $NAMESPACE -l app=mediastorage -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
         if [ -n "$STORAGE_POD" ]; then
-            echo "미디어 스토리지 파일 삭제 중..."
+            echo -e "${YELLOW}미디어 스토리지 파일 삭제 중...${NC}"
             kubectl exec -n $NAMESPACE $STORAGE_POD -- sh -c "rm -rf /app/media/transcoded/* 2>/dev/null || true" &> /dev/null
         fi
 
         # 모든 리소스 삭제
-        echo "쿠버네티스 리소스 삭제 중..."
+        echo -e "${YELLOW}쿠버네티스 리소스 삭제 중...${NC}"
 
         # 모든 디플로이먼트 삭제
         kubectl delete deployment --all -n $NAMESPACE
@@ -94,11 +105,11 @@ function clean_environment {
         kubectl delete configmap --all -n $NAMESPACE
 
         # 네임스페이스 삭제
-        echo "네임스페이스 $NAMESPACE 삭제 중..."
+        echo -e "${YELLOW}네임스페이스 $NAMESPACE 삭제 중...${NC}"
         kubectl delete namespace $NAMESPACE
 
         # 네임스페이스가 완전히 삭제될 때까지 대기
-        echo "네임스페이스 삭제 완료 대기 중..."
+        echo -e "${YELLOW}네임스페이스 삭제 완료 대기 중...${NC}"
         while kubectl get namespace $NAMESPACE &> /dev/null; do
             echo -n "."
             sleep 1
@@ -132,31 +143,40 @@ function clean_environment {
 function build_images {
     echo -e "${YELLOW}도커 이미지를 빌드합니다...${NC}"
 
-    # 공통 라이브러리 먼저 빌드
+    # Minikube Docker 환경으로 전환
+    echo -e "${YELLOW}Minikube Docker 환경으로 전환합니다...${NC}"
+    eval $(minikube docker-env)
+
+    # 공통 라이브러리 항상 빌드 (다른 서비스의 의존성)
     if [ -d "./pixiescale-common" ]; then
         echo "공통 라이브러리 빌드 중..."
         docker compose build common
     fi
 
-    # 나머지 서비스 빌드
-    echo "마이크로서비스 빌드 중..."
-    docker compose build $(docker compose config --services | grep -v "common")
+    # 선택적 서비스 빌드 또는 전체 빌드
+    if [ ${#BUILD_SERVICES[@]} -gt 0 ]; then
+        echo "선택한 서비스를 빌드합니다: ${BUILD_SERVICES[*]}"
+        for SERVICE in "${BUILD_SERVICES[@]}"; do
+            if docker compose config --services | grep -q "^$SERVICE$"; then
+                echo "서비스 빌드 중: $SERVICE"
+                docker compose build $SERVICE
+            else
+                echo -e "${RED}서비스를 찾을 수 없습니다: $SERVICE${NC}"
+                echo "사용 가능한 서비스: $(docker compose config --services | tr '\n' ' ')"
+            fi
+        done
+    else
+        echo "모든 마이크로서비스 빌드 중..."
+        docker compose build $(docker compose config --services | grep -v "common")
+    fi
 
     echo -e "${GREEN}도커 이미지 빌드가 완료되었습니다!${NC}"
 
-    # Minikube에 이미지 로드
-    echo -e "${YELLOW}빌드된 이미지를 Minikube에 로드합니다...${NC}"
+    # 로컬 Docker 환경으로 돌아가기
+    echo -e "${YELLOW}로컬 Docker 환경으로 돌아갑니다...${NC}"
+    eval $(minikube docker-env -u)
 
-    # pixiescale 자체 이미지만 로드 (외부 이미지 제외)
-    CUSTOM_SERVICES=("apigateway" "mediaingestion" "jobmanagement" "mediastorage" "transcodingworker")
-
-    for SERVICE in "${CUSTOM_SERVICES[@]}"; do
-        IMAGE_NAME="pixiescale-${SERVICE}:latest"
-        echo "이미지 로드 중: ${IMAGE_NAME}"
-        minikube image load ${IMAGE_NAME}
-    done
-
-    echo -e "${GREEN}이미지 로드가 완료되었습니다!${NC}"
+    echo -e "${GREEN}이미지 빌드 과정이 완료되었습니다!${NC}"
 }
 
 # 포트 포워딩 시작 함수
@@ -262,17 +282,17 @@ function deploy_services {
     echo -e "${YELLOW}PixieScale 서비스를 배포합니다...${NC}"
 
     # 기존 포트 포워딩 종료
-    echo "기존 포트 포워딩 종료 중..."
+    echo -e "${YELLOW}기존 포트 포워딩 종료 중...${NC}"
     pkill -f "kubectl port-forward" 2>/dev/null || true
 
     # 네임스페이스 생성 (존재하지 않는 경우)
     if ! kubectl get namespace $NAMESPACE &> /dev/null; then
-        echo "네임스페이스 $NAMESPACE 생성 중..."
+        echo -e "${YELLOW}네임스페이스 $NAMESPACE 생성 중...${NC}"
         kubectl create namespace $NAMESPACE
     fi
 
     # 기본 인프라 구성 요소 적용
-    echo "기본 인프라 구성 요소 적용 중..."
+    echo -e "${YELLOW}기본 인프라 구성 요소 적용 중...${NC}"
 
     # Secrets 적용
     if [ -f "k8s/secrets.yml" ]; then
@@ -289,8 +309,27 @@ function deploy_services {
         kubectl apply -f k8s/volumes.yml -n $NAMESPACE
     fi
 
+    # RBAC 적용
+    if [ -f "k8s/prometheus-rbac.yml" ]; then
+      kubectl apply -f k8s/prometheus-rbac.yml -n $NAMESPACE
+    fi
+
+    # kube-state-metrics 배포 (추가된 부분)
+    echo -e "${YELLOW}kube-state-metrics 배포 중...${NC}"
+    if ! kubectl get deployment kube-state-metrics -n kube-system &> /dev/null; then
+        if [ -d "kube-state-metrics/examples/standard" ]; then
+            kubectl apply -f kube-state-metrics/examples/standard/
+            echo -e "${GREEN}kube-state-metrics 배포 완료${NC}"
+        else
+            echo -e "${RED}kube-state-metrics 디렉토리를 찾을 수 없습니다.${NC}"
+            echo -e "${YELLOW}다음 명령어로 설치할 수 있습니다: kubectl apply -f https://github.com/kubernetes/kube-state-metrics/releases/download/v2.8.0/kube-state-metrics.yaml${NC}"
+        fi
+    else
+        echo -e "${GREEN}kube-state-metrics가 이미 배포되어 있습니다.${NC}"
+    fi
+
     # 서비스 및 디플로이먼트 적용
-    echo "서비스 배포 중..."
+    echo -e "${YELLOW}서비스 배포 중...${NC}"
     kubectl apply -f k8s/kafka.yml -n $NAMESPACE
     kubectl apply -f k8s/redis.yml -n $NAMESPACE
     kubectl apply -f k8s/apigateway.yml -n $NAMESPACE
@@ -301,18 +340,24 @@ function deploy_services {
     kubectl apply -f k8s/prometheus.yml -n $NAMESPACE
     kubectl apply -f k8s/grafana.yml -n $NAMESPACE
 
-    # 모니터링 서비스 배포 (존재하는 경우)
-    if [ -f "k8s/monitoring.yml" ]; then
-        echo "모니터링 서비스 배포 중..."
-        kubectl apply -f k8s/monitoring.yml -n $NAMESPACE
-    fi
+    # 배포 재시작
+    echo -e "${YELLOW}마이크로서비스 재시작 중...${NC}"
+    kubectl rollout restart deployment kafka -n $NAMESPACE
+    kubectl rollout restart deployment redis -n $NAMESPACE
+    kubectl rollout restart deployment apigateway -n $NAMESPACE
+    kubectl rollout restart deployment mediaingestion -n $NAMESPACE
+    kubectl rollout restart deployment jobmanagement -n $NAMESPACE
+    kubectl rollout restart deployment mediastorage -n $NAMESPACE
+    kubectl rollout restart deployment transcodingworker -n $NAMESPACE
+    kubectl rollout restart deployment prometheus -n $NAMESPACE
+    kubectl rollout restart deployment grafana -n $NAMESPACE
 
     # 배포 상태 확인
-    echo "배포 상태 확인 중..."
+    echo -e "${YELLOW}배포 상태 확인 중...${NC}"
     kubectl rollout status deployment -n $NAMESPACE --timeout=120s || true
 
     # 추가 대기
-    echo "서비스 안정화를 위해 5초 대기 중..."
+    echo -e "${YELLOW}서비스 안정화를 위해 5초 대기 중...${NC}"
     sleep 5
 
     # 포트 포워딩 시작

@@ -12,6 +12,10 @@ spec:
     metadata:
       labels:
         app: mediaingestion
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8081"
     spec:
       initContainers:
         - name: wait-for-kafka
@@ -70,6 +74,10 @@ kind: Service
 metadata:
   name: mediaingestion-service
   namespace: pixiescale
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/actuator/prometheus"
+    prometheus.io/port: "8081"
 spec:
   selector:
     app: mediaingestion

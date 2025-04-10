@@ -12,6 +12,10 @@ spec:
     metadata:
       labels:
         app: transcodingworker
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8083"
     spec:
       initContainers:
         - name: wait-for-kafka
@@ -24,6 +28,8 @@ spec:
           ports:
             - containerPort: 8083
           env:
+            - name: JAVA_OPTS
+              value: "-Xms512m -Xmx1024m -XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError"
             - name: SPRING_PROFILES_ACTIVE
               valueFrom:
                 configMapKeyRef:
@@ -51,14 +57,12 @@ spec:
               value: "/app/media/temp"
             - name: FFMPEG_GPU_ACCELERATION
               value: "false"
-            - name: FFMPEG_GPU_DEVICE
-              value: "0"
           resources:
             requests:
-              memory: "2Gi"
-              cpu: "500m"
+              memory: "512Mi"
+              cpu: "300m"
             limits:
-              memory: "3Gi"
+              memory: "1Gi"
               cpu: "1000m"
           volumeMounts:
             - name: media-uploads
@@ -72,18 +76,18 @@ spec:
             httpGet:
               path: /actuator/health/liveness
               port: 8083
-            initialDelaySeconds: 60
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 3
+            initialDelaySeconds: 120
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 5
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
               port: 8083
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 3
-            failureThreshold: 3
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 10
+            failureThreshold: 5
       volumes:
         - name: media-uploads
           persistentVolumeClaim:
@@ -100,6 +104,10 @@ kind: Service
 metadata:
   name: transcodingworker-service
   namespace: pixiescale
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/actuator/prometheus"
+    prometheus.io/port: "8083"
 spec:
   selector:
     app: transcodingworker
@@ -117,15 +125,15 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: transcodingworker
-  minReplicas: 3
-  maxReplicas: 7
+  minReplicas: 1
+  maxReplicas: 5
   metrics:
     - type: Resource
       resource:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70
+          averageUtilization: 50
     - type: Resource
       resource:
         name: memory
@@ -134,7 +142,7 @@ spec:
           averageUtilization: 60
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 30
+      stabilizationWindowSeconds: 10
       policies:
         - type: Pods
           value: 1

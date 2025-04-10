@@ -10,7 +10,7 @@ spring:
     max-in-memory-size: 16MB  # WebFlux 코덱 메모리 제한
   webflux:
     multipart:
-      max-in-memory-size: 16MB  # 멀티파트 파일 메모리 제한
+      max-in-memory-size: 16MB
   cloud:
     gateway:
       httpserver:
@@ -43,17 +43,28 @@ spring:
         - AddResponseHeader=X-Api-Gateway, PixieScale
 
 management:
+  server:
+    port: ${server.port}
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: "*"
   endpoint:
     health:
       show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
   metrics:
     export:
       prometheus:
         enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+    tags:
+      application: ${spring.application.name}
 
 logging:
   level:

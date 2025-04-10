@@ -1,7 +1,7 @@
 package com.tenacy.pixiescale.transcodingworker.service;
 
-import com.tenacy.pixiescale.transcodingworker.config.FFmpegConfig;
 import com.tenacy.pixiescale.common.domain.TranscodingTask;
+import com.tenacy.pixiescale.transcodingworker.config.FFmpegConfig;
 import com.tenacy.pixiescale.transcodingworker.service.impl.FFmpegTranscodingWorker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +12,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -35,6 +36,9 @@ public class FFmpegTranscodingWorkerTest {
     @Mock
     private StorageService storageService;
 
+    @Mock
+    private MetricsService metricsService;
+
     @Spy
     private TranscodingWorker transcodingWorker;
 
@@ -52,15 +56,13 @@ public class FFmpegTranscodingWorkerTest {
         lenient().when(storageService.store(any(Path.class), anyString())).thenReturn(Mono.just("test-output.mp4"));
 
         // TranscodingWorker 생성 및 소스 디렉토리 설정
-        transcodingWorker = new FFmpegTranscodingWorker(ffmpegConfig, storageService);
+        transcodingWorker = new FFmpegTranscodingWorker(ffmpegConfig, storageService, metricsService);
 
         // 리플렉션 대신 스파이로 메서드 대체
         transcodingWorker = spy(transcodingWorker);
 
-        // 소스 디렉토리 필드 설정
-        java.lang.reflect.Field field = FFmpegTranscodingWorker.class.getDeclaredField("sourceMediaDir");
-        field.setAccessible(true);
-        field.set(transcodingWorker, tempDir.toString());
+        // sourceMediaDir 필드 설정
+        ReflectionTestUtils.setField(transcodingWorker, "sourceMediaDir", tempDir.toString());
 
         // 테스트 미디어 파일 생성
         createTestMediaFile("test-media-id", "mp4");
