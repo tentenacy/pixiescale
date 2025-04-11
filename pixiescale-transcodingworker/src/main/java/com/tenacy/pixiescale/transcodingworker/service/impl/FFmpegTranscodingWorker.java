@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 import java.io.BufferedReader;
@@ -35,6 +36,7 @@ public class FFmpegTranscodingWorker implements TranscodingWorker {
     private final FFmpegConfig ffmpegConfig;
     private final StorageService storageService;
     private final MetricsService metricsService;
+    private final Scheduler transcodingScheduler;
 
     @Value("${app.media.source-dir}")
     private String sourceMediaDir;
@@ -127,7 +129,7 @@ public class FFmpegTranscodingWorker implements TranscodingWorker {
                     metricsService.taskFailed(task);
                     return Mono.just(task);
                 })
-                .subscribeOn(Schedulers.boundedElastic());
+                .subscribeOn(transcodingScheduler);
     }
 
     private void executeFFmpegCommand(List<String> command, Path tempOutputPath) throws Exception {

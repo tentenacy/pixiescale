@@ -65,7 +65,7 @@ ffmpeg:
   timeout-seconds: 900         # 15분
   gpu-acceleration: true       # GPU 사용
   gpu-device: "0"
-  thread-count: 1
+  thread-count: 4
   cpu-preset: "faster"         # 빠른 인코딩 (메모리 사용량 감소)
   gpu-preset: "p2"             # 빠른 GPU 인코딩
   buffer-size: 16
@@ -83,4 +83,4 @@ app:
       transcoding-task: transcoding-task
       task-result: task-result
   transcoding:
-    max-concurrent-tasks: 1
+    max-concurrent-tasks: 6

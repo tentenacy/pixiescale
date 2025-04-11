@@ -2,6 +2,7 @@ package com.tenacy.pixiescale.mediastorage.event;
 
 import com.tenacy.pixiescale.common.event.StorageResultEvent;
 import com.tenacy.pixiescale.common.event.TaskResultEvent;
+import com.tenacy.pixiescale.mediastorage.config.StorageConfig;
 import com.tenacy.pixiescale.mediastorage.service.EventPublisher;
 import com.tenacy.pixiescale.mediastorage.service.StorageService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class TaskResultListener {
 
     private final StorageService storageService;
     private final EventPublisher eventPublisher;
+    private final StorageConfig storageConfig;
 
     @KafkaListener(topics = "${app.kafka.topics.task-result}", groupId = "${spring.kafka.consumer.group-id}")
     public void handleTaskResult(TaskResultEvent event) {
@@ -39,16 +41,16 @@ public class TaskResultListener {
             return;
         }
 
-        Path sourcePath = Paths.get(outputPath);
+        String fileName = Paths.get(outputPath).getFileName().toString();
+        Path sourcePath = Paths.get(storageConfig.getBaseDir(), fileName);
         File sourceFile = sourcePath.toFile();
 
         if (!sourceFile.exists() || !sourceFile.isFile()) {
-            log.error("출력 파일이 존재하지 않습니다: {}", outputPath);
+            log.error("출력 파일이 존재하지 않습니다: {} (찾은 경로: {})", outputPath, sourcePath);
             publishFailureEvent(event, "출력 파일이 존재하지 않습니다: " + outputPath);
             return;
         }
 
-        String fileName = sourcePath.getFileName().toString();
         String contentType = determineContentType(fileName);
 
         try {

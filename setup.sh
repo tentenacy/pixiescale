@@ -1,4 +1,3 @@
-#!/bin/bash
 set -e
 
 # 색상 정의

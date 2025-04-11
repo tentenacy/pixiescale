@@ -25,11 +25,6 @@ public class TranscodingTaskListener {
     private final EventPublisher eventPublisher;
     private final Scheduler transcodingScheduler;
 
-    // 동시 실행 중인 작업 수 추적
-    private final AtomicInteger activeTasksCount = new AtomicInteger(0);
-    // 작업 ID를 키로 사용하는 활성 작업 맵
-    private final ConcurrentHashMap<String, TranscodingTask> activeTasks = new ConcurrentHashMap<>();
-
     @KafkaListener(topics = "${app.kafka.topics.transcoding-task}",
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "kafkaListenerContainerFactory")
@@ -47,12 +42,8 @@ public class TranscodingTaskListener {
                 .startedAt(LocalDateTime.now())
                 .build();
 
-        // 활성 작업 맵에 추가
-        activeTasks.put(task.getId(), task);
-        activeTasksCount.incrementAndGet();
-
         transcodingWorker.processTask(task)
-                .doOnSuccess(processedTask -> {
+                .flatMap(processedTask -> {
                     TaskResultEvent resultEvent = TaskResultEvent.builder()
                             .taskId(processedTask.getId())
                             .jobId(processedTask.getJobId())
@@ -61,15 +52,9 @@ public class TranscodingTaskListener {
                             .completedAt(LocalDateTime.now())
                             .build();
 
-                    eventPublisher.publishTaskResult(resultEvent)
-                            .doFinally(signal -> {
-                                // 작업 완료 후 상태 정리 및 오프셋 커밋
-                                cleanupTask(task.getId());
-                                ack.acknowledge();
-                            })
-                            .subscribe();
+                    return eventPublisher.publishTaskResult(resultEvent);
                 })
-                .doOnError(error -> {
+                .onErrorResume(error -> {
                     TaskResultEvent resultEvent = TaskResultEvent.builder()
                             .taskId(task.getId())
                             .jobId(task.getJobId())
@@ -78,20 +63,12 @@ public class TranscodingTaskListener {
                             .completedAt(LocalDateTime.now())
                             .build();
 
-                    eventPublisher.publishTaskResult(resultEvent)
-                            .doFinally(signal -> {
-                                // 작업 실패 후 상태 정리 및 오프셋 커밋
-                                cleanupTask(task.getId());
-                                ack.acknowledge();
-                            })
-                            .subscribe();
+                    return eventPublisher.publishTaskResult(resultEvent);
+                })
+                .doFinally(signal -> {
+                    ack.acknowledge();
                 })
                 .subscribeOn(transcodingScheduler)
                 .subscribe();
-    }
-
-    private void cleanupTask(String taskId) {
-        activeTasks.remove(taskId);
-        activeTasksCount.decrementAndGet();
     }
 }
