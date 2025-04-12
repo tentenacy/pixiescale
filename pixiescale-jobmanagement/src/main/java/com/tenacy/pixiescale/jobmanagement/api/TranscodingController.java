@@ -1,9 +1,9 @@
 package com.tenacy.pixiescale.jobmanagement.api;
 
-import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobRequest;
-import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobResponse;
 import com.tenacy.pixiescale.common.domain.TranscodingJob;
 import com.tenacy.pixiescale.common.domain.TranscodingTask;
+import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobRequest;
+import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobResponse;
 import com.tenacy.pixiescale.jobmanagement.service.TranscodingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

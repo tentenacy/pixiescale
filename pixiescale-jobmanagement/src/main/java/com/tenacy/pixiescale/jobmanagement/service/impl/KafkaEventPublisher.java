@@ -11,6 +11,7 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -33,7 +34,7 @@ public class KafkaEventPublisher implements EventPublisher {
     public Mono<Void> publishJobCreated(TranscodingJobEvent event) {
         return Mono.fromRunnable(() -> {
             CompletableFuture<SendResult<String, Object>> future =
-                    kafkaTemplate.send(jobCreatedTopic, event.getJobId(), event);
+                    kafkaTemplate.send(jobCreatedTopic, UUID.randomUUID().toString(), event);
 
             future.whenComplete((result, ex) -> {
                 if (ex == null) {
@@ -49,7 +50,7 @@ public class KafkaEventPublisher implements EventPublisher {
     public Mono<Void> publishJobUpdated(TranscodingJobEvent event) {
         return Mono.fromRunnable(() -> {
             CompletableFuture<SendResult<String, Object>> future =
-                    kafkaTemplate.send(jobUpdatedTopic, event.getJobId(), event);
+                    kafkaTemplate.send(jobUpdatedTopic, UUID.randomUUID().toString(), event);
 
             future.whenComplete((result, ex) -> {
                 if (ex == null) {
@@ -65,7 +66,7 @@ public class KafkaEventPublisher implements EventPublisher {
     public Mono<Void> publishTranscodingTask(TranscodingTaskEvent event) {
         return Mono.fromRunnable(() -> {
             CompletableFuture<SendResult<String, Object>> future =
-                    kafkaTemplate.send(transcodingTaskTopic, event.getTaskId(), event);
+                    kafkaTemplate.send(transcodingTaskTopic, UUID.randomUUID().toString(), event);
 
             future.whenComplete((result, ex) -> {
                 if (ex == null) {

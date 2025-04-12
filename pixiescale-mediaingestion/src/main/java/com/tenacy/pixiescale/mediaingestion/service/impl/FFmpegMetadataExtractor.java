@@ -1,7 +1,7 @@
 package com.tenacy.pixiescale.mediaingestion.service.impl;
 
-import com.tenacy.pixiescale.mediaingestion.config.FFmpegConfig;
 import com.tenacy.pixiescale.common.domain.MediaMetadata;
+import com.tenacy.pixiescale.mediaingestion.config.FFmpegConfig;
 import com.tenacy.pixiescale.mediaingestion.service.MetadataExtractor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

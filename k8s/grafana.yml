@@ -66,7 +66,7 @@ data:
             "type": "prometheus",
             "uid": "default"
           },
-          "description": "트랜스코딩 워커의 CPU 사용률 - HPA의 스케일링 결정 기준",
+          "description": "CPU time spent busy vs idle, split by activity type",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -79,50 +79,120 @@ data:
                 "axisPlacement": "auto",
                 "barAlignment": 0,
                 "drawStyle": "line",
-                "fillOpacity": 0.5,
+                "fillOpacity": 40,
                 "gradientMode": "none",
                 "hideFrom": {
                   "legend": false,
                   "tooltip": false,
                   "viz": false
                 },
-                "lineInterpolation": "linear",
+                "lineInterpolation": "smooth",
                 "lineWidth": 1,
                 "pointSize": 5,
                 "scaleDistribution": {
                   "type": "linear"
                 },
-                "showPoints": "auto",
+                "showPoints": "never",
                 "spanNulls": false,
                 "stacking": {
                   "group": "A",
-                  "mode": "none"
+                  "mode": "percent"
                 },
                 "thresholdsStyle": {
-                  "mode": "line"
+                  "mode": "off"
                 }
               },
+              "links": [],
               "mappings": [],
+              "min": 0,
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
                   {
                     "color": "green",
                     "value": null
-                  },
-                  {
-                    "color": "orange",
-                    "value": 50
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
                   }
                 ]
               },
-              "unit": "percent"
+              "unit": "percentunit"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Busy Iowait"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#890F02",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Idle"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#052B51",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Busy System"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#EAB839",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Busy User"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#0A437C",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Busy Other"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#6D1F62",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 8,
@@ -130,39 +200,97 @@ data:
             "x": 0,
             "y": 0
           },
-          "id": 2,
+          "id": 10,
           "options": {
             "legend": {
-              "calcs": ["min", "max", "mean"],
-              "displayMode": "table",
+              "calcs": [],
+              "displayMode": "list",
               "placement": "bottom",
-              "showLegend": true
+              "showLegend": true,
+              "width": 250
             },
             "tooltip": {
-              "mode": "single",
-              "sort": "none"
+              "hideZeros": false,
+              "mode": "multi",
+              "sort": "desc"
             }
           },
-          "title": "트랜스코딩 워커 CPU 사용률",
-          "type": "timeseries",
+          "pluginVersion": "11.6.1",
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "default"
-              },
-              "expr": "100 * sum(rate(process_cpu_usage{kubernetes_pod_name=~\"transcodingworker.*\"}[1m])) by (kubernetes_pod_name) / sum(system_cpu_count{kubernetes_pod_name=~\"transcodingworker.*\"}) by (kubernetes_pod_name)",
+              "editorMode": "code",
+              "exemplar": false,
+              "expr": "sum(irate(node_cpu_seconds_total{job=\"node-exporter\", mode=\"system\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{job=\"node-exporter\"}) by (cpu)))",
+              "format": "time_series",
+              "hide": false,
+              "instant": false,
+              "intervalFactor": 1,
+              "legendFormat": "Busy System",
+              "range": true,
               "refId": "A",
-              "legendFormat": "{{kubernetes_pod_name}}"
+              "step": 240
+            },
+            {
+              "editorMode": "code",
+              "expr": "sum(irate(node_cpu_seconds_total{job=\"node-exporter\", mode=\"user\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{job=\"node-exporter\"}) by (cpu)))",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 1,
+              "legendFormat": "Busy User",
+              "range": true,
+              "refId": "B",
+              "step": 240
+            },
+            {
+              "editorMode": "code",
+              "expr": "sum(irate(node_cpu_seconds_total{job=\"node-exporter\", mode=\"iowait\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{job=\"node-exporter\"}) by (cpu)))",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Busy Iowait",
+              "range": true,
+              "refId": "C",
+              "step": 240
+            },
+            {
+              "editorMode": "code",
+              "expr": "sum(irate(node_cpu_seconds_total{job=\"node-exporter\", mode=~\".*irq\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{job=\"node-exporter\"}) by (cpu)))",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Busy IRQs",
+              "range": true,
+              "refId": "D",
+              "step": 240
+            },
+            {
+              "editorMode": "code",
+              "expr": "sum(irate(node_cpu_seconds_total{job=\"node-exporter\", mode!='idle',mode!='user',mode!='system',mode!='iowait',mode!='irq',mode!='softirq'}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{job=\"node-exporter\"}) by (cpu)))",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Busy Other",
+              "range": true,
+              "refId": "E",
+              "step": 240
+            },
+            {
+              "editorMode": "code",
+              "expr": "sum(irate(node_cpu_seconds_total{job=\"node-exporter\", mode=\"idle\"}[$__rate_interval])) / scalar(count(count(node_cpu_seconds_total{job=\"node-exporter\"}) by (cpu)))",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Idle",
+              "range": true,
+              "refId": "F",
+              "step": 240
             }
-          ]
+          ],
+          "title": "CPU Basic",
+          "type": "timeseries"
         },
         {
           "datasource": {
             "type": "prometheus",
             "uid": "default"
           },
-          "description": "메모리 사용량 - 잠재적인 스케일링 메트릭",
+          "description": "RAM and swap usage overview, including caches",
           "fieldConfig": {
             "defaults": {
               "color": {
@@ -175,7 +303,7 @@ data:
                 "axisPlacement": "auto",
                 "barAlignment": 0,
                 "drawStyle": "line",
-                "fillOpacity": 0.5,
+                "fillOpacity": 40,
                 "gradientMode": "none",
                 "hideFrom": {
                   "legend": false,
@@ -188,33 +316,103 @@ data:
                 "scaleDistribution": {
                   "type": "linear"
                 },
-                "showPoints": "auto",
+                "showPoints": "never",
                 "spanNulls": false,
                 "stacking": {
                   "group": "A",
-                  "mode": "none"
+                  "mode": "normal"
                 },
                 "thresholdsStyle": {
                   "mode": "off"
                 }
               },
+              "links": [],
               "mappings": [],
+              "min": 0,
               "thresholds": {
                 "mode": "absolute",
                 "steps": [
                   {
                     "color": "green",
                     "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
                   }
                 ]
               },
               "unit": "bytes"
             },
-            "overrides": []
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Swap used"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#BF1B00",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Total"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#E0F9D7",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 0
+                  },
+                  {
+                    "id": "custom.stacking",
+                    "value": {
+                      "group": false,
+                      "mode": "normal"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Cache + Buffer"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#052B51",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Free"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#7EB26D",
+                      "mode": "fixed"
+                    }
+                  }
+                ]
+              }
+            ]
           },
           "gridPos": {
             "h": 8,
@@ -222,32 +420,78 @@ data:
             "x": 12,
             "y": 0
           },
-          "id": 3,
+          "id": 11,
           "options": {
             "legend": {
-              "calcs": ["min", "max", "mean"],
-              "displayMode": "table",
+              "calcs": [],
+              "displayMode": "list",
               "placement": "bottom",
-              "showLegend": true
+              "showLegend": true,
+              "width": 350
             },
             "tooltip": {
-              "mode": "single",
+              "hideZeros": false,
+              "mode": "multi",
               "sort": "none"
             }
           },
-          "title": "트랜스코딩 워커 메모리 사용량",
-          "type": "timeseries",
+          "pluginVersion": "11.6.1",
           "targets": [
             {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "default"
-              },
-              "expr": "sum(jvm_memory_used_bytes{kubernetes_pod_name=~\"transcodingworker.*\"}) by (kubernetes_pod_name, area)",
+              "editorMode": "code",
+              "expr": "node_memory_MemTotal_bytes{job=\"node-exporter\"}",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 1,
+              "legendFormat": "Total",
+              "range": true,
               "refId": "A",
-              "legendFormat": "{{kubernetes_pod_name}} - {{area}}"
+              "step": 240
+            },
+            {
+              "editorMode": "code",
+              "expr": "node_memory_MemTotal_bytes{job=\"node-exporter\"} - node_memory_MemFree_bytes{job=\"node-exporter\"} - (node_memory_Cached_bytes{job=\"node-exporter\"} + node_memory_Buffers_bytes{job=\"node-exporter\"} + node_memory_SReclaimable_bytes{job=\"node-exporter\"})",
+              "format": "time_series",
+              "hide": false,
+              "intervalFactor": 1,
+              "legendFormat": "Used",
+              "range": true,
+              "refId": "B",
+              "step": 240
+            },
+            {
+              "editorMode": "code",
+              "expr": "node_memory_Cached_bytes{job=\"node-exporter\"} + node_memory_Buffers_bytes{job=\"node-exporter\"} + node_memory_SReclaimable_bytes{job=\"node-exporter\"}",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Cache + Buffer",
+              "range": true,
+              "refId": "C",
+              "step": 240
+            },
+            {
+              "editorMode": "code",
+              "expr": "node_memory_MemFree_bytes{job=\"node-exporter\"}",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Free",
+              "range": true,
+              "refId": "D",
+              "step": 240
+            },
+            {
+              "editorMode": "code",
+              "expr": "(node_memory_SwapTotal_bytes{job=\"node-exporter\"} - node_memory_SwapFree_bytes{job=\"node-exporter\"})",
+              "format": "time_series",
+              "intervalFactor": 1,
+              "legendFormat": "Swap used",
+              "range": true,
+              "refId": "E",
+              "step": 240
             }
-          ]
+          ],
+          "title": "Memory Basic",
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -534,7 +778,7 @@ data:
                 "type": "prometheus",
                 "uid": "default"
               },
-              "expr": "sum(pixiescale_active_jobs_count)",
+              "expr": "sum(pixiescale_active_jobs_count{container_name="transcodingworker"})",
               "legendFormat": "processing",
               "refId": "A"
             },
@@ -543,7 +787,7 @@ data:
                 "type": "prometheus",
                 "uid": "default"
               },
-              "expr": "sum(pixiescale_pending_jobs_count)",
+              "expr": "sum(pixiescale_pending_jobs_count{container_name="transcodingworker"})",
               "legendFormat": "pending",
               "refId": "B"
             }
@@ -635,7 +879,7 @@ data:
                 "type": "prometheus",
                 "uid": "default"
               },
-              "expr": "sum(round(increase(pixiescale_transcoding_tasks_total{status=\"completed\"}[1m])))",
+              "expr": "sum(round(increase(pixiescale_transcoding_tasks_total{status="completed", container_name="transcodingworker"}[1m])))",
               "refId": "A",
               "legendFormat": "completed"
             },
@@ -644,7 +888,7 @@ data:
                 "type": "prometheus",
                 "uid": "default"
               },
-              "expr": "sum(round(increase(pixiescale_transcoding_tasks_total{status=\"failed\"}[1m])))",
+              "expr": "sum(round(increase(pixiescale_transcoding_tasks_total{status="failed", container_name="transcodingworker"}[1m])))",
               "refId": "B",
               "legendFormat": "failed"
             }

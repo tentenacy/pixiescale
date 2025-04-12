@@ -5,6 +5,8 @@ spring:
   application:
     name: pixiescale-transcodingworker
   kafka:
+    admin:
+      auto-create: true
     bootstrap-servers: localhost:9092
     consumer:
       group-id: transcodingworker-group
@@ -80,7 +82,11 @@ app:
     source-dir: ${user.home}/pixiescale/media/uploads
   kafka:
     topics:
+      media-uploaded: media-uploaded
+      job-created: job-created
+      job-updated: job-updated
       transcoding-task: transcoding-task
       task-result: task-result
+      storage-result: storage-result
   transcoding:
     max-concurrent-tasks: 6

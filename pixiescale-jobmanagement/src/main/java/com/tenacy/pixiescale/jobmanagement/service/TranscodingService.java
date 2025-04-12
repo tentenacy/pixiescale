@@ -1,7 +1,7 @@
 package com.tenacy.pixiescale.jobmanagement.service;
 
-import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobRequest;
 import com.tenacy.pixiescale.common.domain.TranscodingJob;
+import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobRequest;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 

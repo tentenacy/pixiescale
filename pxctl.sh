@@ -337,6 +337,7 @@ function deploy_services {
     kubectl apply -f k8s/transcodingworker.yml -n $NAMESPACE
     kubectl apply -f k8s/prometheus.yml -n $NAMESPACE
     kubectl apply -f k8s/grafana.yml -n $NAMESPACE
+    kubectl apply -f k8s/node-exporter.yml -n $NAMESPACE
 
     # 배포 재시작
     echo -e "${YELLOW}마이크로서비스 재시작 중...${NC}"

@@ -65,6 +65,28 @@ data:
             action: replace
             target_label: kubernetes_service_name
 
+      - job_name: 'node-exporter'
+        metrics_path: '/metrics'
+        static_configs:
+          - targets: ['node-exporter.pixiescale.svc.cluster.local:9100']
+        kubernetes_sd_configs:
+          - role: endpoints
+            namespaces:
+              names:
+                - pixiescale
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_service_label_app]
+            regex: node-exporter
+            action: keep
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: kubernetes_namespace
+          - source_labels: [__meta_kubernetes_service_name]
+            action: replace
+            target_label: kubernetes_name
+
       - job_name: 'kubernetes-nodes'
         scheme: https
         tls_config:
@@ -82,6 +104,7 @@ data:
             regex: (.+)
             target_label: __metrics_path__
             replacement: /api/v1/nodes/${1}/proxy/metrics
+    
       - job_name: 'kube-state-metrics'
         kubernetes_sd_configs:
           - role: service

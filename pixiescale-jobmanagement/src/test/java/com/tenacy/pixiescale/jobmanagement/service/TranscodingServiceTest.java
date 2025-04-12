@@ -1,10 +1,10 @@
 package com.tenacy.pixiescale.jobmanagement.service;
 
-import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobRequest;
 import com.tenacy.pixiescale.common.domain.MediaFile;
 import com.tenacy.pixiescale.common.domain.MediaMetadata;
 import com.tenacy.pixiescale.common.domain.TranscodingConfig;
 import com.tenacy.pixiescale.common.domain.TranscodingJob;
+import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobRequest;
 import com.tenacy.pixiescale.jobmanagement.event.MediaEventListener;
 import com.tenacy.pixiescale.jobmanagement.service.impl.TranscodingServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)

@@ -10,6 +10,7 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -26,7 +27,7 @@ public class KafkaEventPublisher implements EventPublisher {
     public Mono<Void> publishStorageResult(StorageResultEvent event) {
         return Mono.fromRunnable(() -> {
             CompletableFuture<SendResult<String, Object>> future =
-                    kafkaTemplate.send(storageResultTopic, event.getTaskId(), event);
+                    kafkaTemplate.send(storageResultTopic, UUID.randomUUID().toString(), event);
 
             future.whenComplete((result, ex) -> {
                 if (ex == null) {

@@ -1,7 +1,7 @@
 package com.tenacy.pixiescale.mediaingestion.api;
 
-import com.tenacy.pixiescale.mediaingestion.api.dto.MediaUploadResponse;
 import com.tenacy.pixiescale.common.domain.MediaFile;
+import com.tenacy.pixiescale.mediaingestion.api.dto.MediaUploadResponse;
 import com.tenacy.pixiescale.mediaingestion.service.MediaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,9 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.codec.multipart.FilePart;
-import org.springframework.http.codec.multipart.Part;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.io.File;
@@ -20,7 +18,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Map;
 
 @Slf4j
 @RestController

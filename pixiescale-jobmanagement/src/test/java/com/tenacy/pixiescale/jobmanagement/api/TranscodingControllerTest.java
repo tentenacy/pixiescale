@@ -1,10 +1,9 @@
 package com.tenacy.pixiescale.jobmanagement.api;
 
-import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobRequest;
-import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobResponse;
 import com.tenacy.pixiescale.common.domain.TranscodingConfig;
 import com.tenacy.pixiescale.common.domain.TranscodingJob;
-import com.tenacy.pixiescale.common.domain.TranscodingTask;
+import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobRequest;
+import com.tenacy.pixiescale.jobmanagement.api.dto.TranscodingJobResponse;
 import com.tenacy.pixiescale.jobmanagement.service.TranscodingService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)

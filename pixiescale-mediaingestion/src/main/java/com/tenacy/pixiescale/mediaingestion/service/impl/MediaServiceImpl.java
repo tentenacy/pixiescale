@@ -1,8 +1,8 @@
 package com.tenacy.pixiescale.mediaingestion.service.impl;
 
-import com.tenacy.pixiescale.mediaingestion.config.StorageConfig;
 import com.tenacy.pixiescale.common.domain.MediaFile;
 import com.tenacy.pixiescale.common.event.MediaUploadedEvent;
+import com.tenacy.pixiescale.mediaingestion.config.StorageConfig;
 import com.tenacy.pixiescale.mediaingestion.service.EventPublisher;
 import com.tenacy.pixiescale.mediaingestion.service.MediaService;
 import com.tenacy.pixiescale.mediaingestion.service.MetadataExtractor;
@@ -19,7 +19,6 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 @Slf4j
 @Service

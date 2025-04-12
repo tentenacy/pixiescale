@@ -1,7 +1,7 @@
 package com.tenacy.pixiescale.transcodingworker.service.impl;
 
-import com.tenacy.pixiescale.transcodingworker.config.FFmpegConfig;
 import com.tenacy.pixiescale.common.domain.TranscodingTask;
+import com.tenacy.pixiescale.transcodingworker.config.FFmpegConfig;
 import com.tenacy.pixiescale.transcodingworker.service.StorageService;
 import com.tenacy.pixiescale.transcodingworker.service.TranscodingWorker;
 import org.springframework.context.annotation.Primary;

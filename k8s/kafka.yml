@@ -43,8 +43,8 @@ spec:
               value: "PLAINTEXT://kafka-service:9092"
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
-            - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
-              value: "true"
+#            - name: KAFKA_AUTO_CREATE_TOPICS_ENABLE
+#              value: "true"
           resources:
             requests:
               memory: "258Mi"
@@ -64,38 +64,3 @@ spec:
   ports:
     - port: 9092
       targetPort: 9092
----
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: kafka-topic-setup
-  namespace: pixiescale
-spec:
-  template:
-    spec:
-      containers:
-        - name: kafka-topic-setup
-          image: confluentinc/cp-kafka:7.5.0
-          command:
-            - "sh"
-            - "-c"
-            - |
-              # Kafka가 준비될 때까지 대기
-              echo "Kafka가 준비될 때까지 대기 중..."
-              until kafka-topics --bootstrap-server kafka-service:9092 --list > /dev/null 2>&1; do
-                sleep 5
-              done
-              
-              echo "Kafka가 준비되었습니다."
-              
-              # transcoding-task 토픽 설정
-              if kafka-topics --bootstrap-server kafka-service:9092 --list | grep -q "transcoding-task"; then
-                echo "transcoding-task 토픽이 존재합니다. 파티션 수를 10으로 변경합니다..."
-                kafka-topics --bootstrap-server kafka-service:9092 --alter --topic transcoding-task --partitions 10
-              else
-                echo "transcoding-task 토픽을 10개 파티션으로 생성합니다..."
-                kafka-topics --bootstrap-server kafka-service:9092 --create --topic transcoding-task --partitions 10 --replication-factor 1
-              fi
-              
-              echo "Kafka 토픽 설정이 완료되었습니다."
-      restartPolicy: OnFailure
